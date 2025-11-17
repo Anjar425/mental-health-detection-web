@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { QuestionCard } from "@/components/dass42/question-card"
 import { ResultsCard } from "@/components/dass42/results-card"
+import axios from "axios"
 
 const dassQuestions = [
     // Depression items (1, 3, 5, 10, 13, 16, 17, 21, 24, 26, 31, 34, 37, 38, 42)
@@ -90,6 +91,8 @@ export function DassQuestionnaire() {
     const [currentQuestion, setCurrentQuestion] = useState(0)
     const [responses, setResponses] = useState<Record<number, number | string>>({})
     const [isCompleted, setIsCompleted] = useState(false)
+    const [apiData, setApiData] = useState(null)
+    const [isLoading, setIsloading] = useState(false)
 
     const handleResponse = (questionId: number, value: number | string) => {
         const roundedValue = Math.round(Number(value) * 10) / 10
@@ -101,6 +104,7 @@ export function DassQuestionnaire() {
             setCurrentQuestion((prev) => prev + 1)
         } else {
             setIsCompleted(true)
+            submitToInference()
         }
     }
 
@@ -110,37 +114,47 @@ export function DassQuestionnaire() {
         }
     }
 
-    const calculateScores = () => {
-        const depressionItems = [3, 5, 10, 13, 16, 17, 21, 24, 26, 31, 34, 37, 38, 42]
-        const anxietyItems = [2, 4, 7, 9, 15, 19, 20, 23, 25, 28, 29, 33, 36, 40, 41]
-        const stressItems = [1, 6, 8, 11, 12, 14, 18, 22, 27, 30, 32, 35, 39]
+    const submitToInference = async () => {
+        setIsloading(true)
+        const questionnaire_responses: Record<string, number> = {};
 
+        for (let i = 1; i <= 42; i++) {
+            questionnaire_responses[`Q${i}`] = Number(responses[i] ?? 0);
+        }
 
-        const depressionScore =
-            Math.round(depressionItems.reduce((sum, item) => sum + Number(responses[item] ?? 0), 0) * 2 * 10) / 10;
+        try {
+            const res = await axios.post(
+                `${process.env.NEXT_PUBLIC_API}/inference/compute`,
+                { questionnaire_responses },
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
 
-        const anxietyScore =
-            Math.round(anxietyItems.reduce((sum, item) => sum + Number(responses[item] ?? 0), 0) * 2 * 10) / 10;
+            setApiData(res.data)
+            setIsloading(false)
 
-        const stressScore =
-            Math.round(stressItems.reduce((sum, item) => sum + Number(responses[item] ?? 0), 0) * 2 * 10) / 10;
-
-
-        return { depressionScore, anxietyScore, stressScore }
-    }
+            return res.data;
+        } catch (err) {
+            console.error("Inference compute error:", err);
+            return null;
+        }
+    };
 
     const progress = ((currentQuestion + 1) / dassQuestions.length) * 100
     const currentQuestionData = dassQuestions[currentQuestion]
     const currentResponse = responses[currentQuestionData?.id] !== undefined ? responses[currentQuestionData?.id] : 0
 
-    if (isCompleted) {
+    if (isCompleted && apiData) {
         return (
             <ResultsCard
-                scores={calculateScores()}
+                inference={apiData}
                 onRestart={() => {
                     setCurrentQuestion(0)
                     setResponses({})
-                    setIsCompleted(false)
+                    window.location.href ="/"
                 }}
             />
         )

@@ -7,7 +7,7 @@ import { LogOut } from "lucide-react"
 import { RulesetModule } from "@/components/expert/ruleset-module"
 import { PreferenceModule } from "@/components/expert/preference-module"
 import { ProfileInfluenceModule } from "@/components/expert/profile-influence-module"
-import * as jwt_decode from 'jwt-decode';
+import { jwtDecode } from "jwt-decode"
 
 
 export default function ExpertDashboard() {
@@ -17,27 +17,27 @@ export default function ExpertDashboard() {
 
 
 	useEffect(() => {
-		const token = sessionStorage.getItem("expertToken");
+		const token = sessionStorage.getItem("authToken");
 
 		if (!token) {
 			console.log(token)
-			window.location.href = "/auth/login";
+			// window.location.href = "/auth/login";
 		} else {
 			try {
-				const decodedToken: any = jwt_decode.jwtDecode(token);
+				const decodedToken: any = jwtDecode(token);
 
 				const userRole = decodedToken.role;
 				const userEmail = decodedToken.sub
 				if (userRole !== "expert") {
 					console.log(userRole)
-					window.location.href = "/auth/login";
+					// window.location.href = "/auth/login";
 				} else {
 					setIsLoggedIn(true);
 					setExpertEmail(userEmail || "");
 				}
 			} catch (err) {
 				console.error("Error decoding token:", err);
-				window.location.href = "/auth/login";
+				// window.location.href = "/auth/login";
 			}
 		}
 
@@ -45,8 +45,7 @@ export default function ExpertDashboard() {
 	}, []);
 
 	const handleLogout = () => {
-		sessionStorage.removeItem("expertLoggedIn")
-		sessionStorage.removeItem("expertEmail")
+		sessionStorage.removeItem("authToken")
 		window.location.href = "/"
 	}
 

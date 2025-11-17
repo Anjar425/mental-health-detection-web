@@ -41,7 +41,7 @@ export function ProfileInfluenceModule() {
 
 
 	useEffect(() => {
-		const expertToken = sessionStorage.getItem("expertToken");
+		const expertToken = sessionStorage.getItem("authToken");
 		setToken(expertToken);
 
 		const fetchProfile = async () => {
@@ -74,8 +74,22 @@ export function ProfileInfluenceModule() {
 				});
 
 			} catch (error) {
-				sessionStorage.clear();
-				window.location.href = "/auth/login";
+				// sessionStorage.clear();
+				// window.location.href = "/auth/login";
+				setProfile({
+					education: "",
+					patientCount: "",
+					publications: "",
+					experienceHours: "",
+				});
+				setWeights({
+					education: 25,
+					patientCount: 25,
+					publications: 25,
+					experienceHours: 25,
+				});
+				setIsLoading(false);
+
 			}
 		};
 

@@ -109,6 +109,7 @@ export function DassQuestionnaire() {
                     setCurrentQuestion(0)
                     setResponses({})
                     setIsCompleted(false)
+                    window.location.href = "/"
                 }}
             />
         )

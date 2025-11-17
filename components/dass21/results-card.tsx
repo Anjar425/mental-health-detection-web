@@ -20,11 +20,11 @@ interface ResultsCardProps {
 
 
 export function ResultsCard({ scores, onRestart }: ResultsCardProps) {
-const chartData = [
-  { browser: "Depresi", visitors: Number((scores.depression * 100).toFixed(2)), fill: "var(--chart-1)" },
-  { browser: "Kecemasan", visitors: Number((scores.anxiety * 100).toFixed(2)), fill: "var(--chart-2)" },
-  { browser: "Stress", visitors: Number((scores.stress * 100).toFixed(2)), fill: "var(--chart-3)" },
-];
+	const chartData = [
+		{ browser: "Depresi", visitors: Number((scores.depression * 100).toFixed(2)), fill: "var(--chart-1)" },
+		{ browser: "Kecemasan", visitors: Number((scores.anxiety * 100).toFixed(2)), fill: "var(--chart-2)" },
+		{ browser: "Stress", visitors: Number((scores.stress * 100).toFixed(2)), fill: "var(--chart-3)" },
+	];
 
 	const chartConfig = {
 		visitors: {
@@ -44,6 +44,14 @@ const chartData = [
 		},
 	} satisfies ChartConfig
 
+	const entries = [
+		{ label: "Depresi", value: scores.depression, color: "text-chart-1" },
+		{ label: "Kecemasan", value: scores.anxiety, color: "text-chart-2" },
+		{ label: "Stress", value: scores.stress, color: "text-chart-3" }
+	];
+
+	const dominant = entries.reduce((a, b) => (a.value > b.value ? a : b));
+
 	return (
 		<div className="min-h-screen bg-linear-to-br from-background via-accent/5 to-background p-4">
 			<div className="max-w-4xl mx-auto pt-8">
@@ -54,6 +62,26 @@ const chartData = [
 						Berikut adalah hasil evaluasi kesehatan mental Anda berdasarkan jawaban yang diberikan
 					</p>
 				</div>
+
+				<Card className="border-2 border-accent/20 mb-8">
+					<CardHeader>
+						<CardTitle className="text-xl">Gejala Dominan</CardTitle>
+						<CardDescription>
+							Berdasarkan hasil perhitungan, berikut kategori dengan tingkat gejala tertinggi
+						</CardDescription>
+					</CardHeader>
+
+					<CardContent>
+						<div className="p-4 rounded-xl bg-accent/10">
+							<p className={`text-2xl font-bold ${dominant.color}`}>
+								{dominant.label}: {(dominant.value * 100).toFixed(2)}%
+							</p>
+							<p className="text-muted-foreground mt-2">
+								Ini merupakan kategori dengan tingkat keparahan tertinggi berdasarkan jawaban Anda.
+							</p>
+						</div>
+					</CardContent>
+				</Card>
 
 				<Card className="border-2 border-accent/20 mb-8">
 					<CardHeader>
@@ -131,7 +159,7 @@ const chartData = [
 				{/* Actions */}
 				<div className="flex justify-center gap-4">
 					<Button onClick={onRestart} variant="outline" className="px-8 bg-transparent">
-						Isi Ulang Kuisioner
+						Kembali ke Home
 					</Button>
 					<Button onClick={() => window.print()} className="px-8">
 						Cetak Hasil

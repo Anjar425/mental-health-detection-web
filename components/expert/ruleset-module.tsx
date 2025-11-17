@@ -59,7 +59,7 @@ export function RulesetModule() {
 	const [rules, setRules] = useState<RuleItem[]>([])
 
 	useEffect(() => {
-		const expertToken = sessionStorage.getItem("expertToken");
+		const expertToken = sessionStorage.getItem("authToken");
 
 		const fetchRules = async () => {
 			try {
@@ -166,7 +166,7 @@ export function RulesetModule() {
 
 		console.log(payload)
 
-		const expertToken = sessionStorage.getItem("expertToken");
+		const expertToken = sessionStorage.getItem("authToken");
 
 		try {
 			const response = await axios.post(`${process.env.NEXT_PUBLIC_API}/ruleset`, payload,
@@ -525,14 +525,14 @@ export function RulesetModule() {
 										<Button variant="outline" size="sm" onClick={() => handleEdit(rule)} className="gap-1">
 											<Edit2 className="w-4 h-4" />
 										</Button>
-										<Button
+										{/* <Button
 											variant="outline"
 											size="sm"
 											onClick={() => handleDelete(rule.id)}
 											className="gap-1 text-destructive hover:text-destructive"
 										>
 											<Trash2 className="w-4 h-4" />
-										</Button>
+										</Button> */}
 									</div>
 								</div>
 							</div>

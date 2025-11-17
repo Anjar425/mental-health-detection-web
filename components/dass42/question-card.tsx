@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
+import { useEffect } from "react"
 
 interface Question {
     id: number
@@ -24,7 +25,6 @@ const scaleLabels = [
 ]
 
 export function QuestionCard({ question, response, onResponse }: QuestionCardProps) {
-    console.log(response)
     const getScaleLabel = (value: number) => {
         if (value === 0) return scaleLabels[0]
         if (value <= 1) return scaleLabels[1]
@@ -40,6 +40,10 @@ export function QuestionCard({ question, response, onResponse }: QuestionCardPro
     }
 
     const currentLabel = response !== undefined ? getScaleLabel(response) : null
+
+    useEffect(() => {
+        onResponse(question.id, 0)
+    }, [question.id])
 
     return (
         <Card className="border-2 border-accent/20 shadow-lg">

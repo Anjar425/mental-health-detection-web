@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { Shield, Eye, EyeOff } from "lucide-react"
+import { jwtDecode } from "jwt-decode"
 
 export default function ExpertLoginPage() {
 	const [email, setEmail] = useState("")
@@ -18,7 +19,7 @@ export default function ExpertLoginPage() {
 
 	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setError(""); 
+		setError("");
 		setIsLoading(true);
 
 		try {
@@ -41,9 +42,13 @@ export default function ExpertLoginPage() {
 				const data = await response.json();
 
 				if (data.access_token) {
-					sessionStorage.setItem("expertToken", data.access_token);
+					sessionStorage.setItem("authToken", data.access_token);
 
-					window.location.href = "/expert/dashboard";
+					const decoded: any = jwtDecode(data.access_token)
+					if (decoded.rule === "expert")
+						window.location.href = "/expert/dashboard";
+					else
+						window.location.href = "/user/dashboard";
 				} else {
 					setError("Token not found, login failed.");
 				}

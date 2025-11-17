@@ -53,7 +53,7 @@ export function PreferenceModule() {
 	useEffect(() => {
 		const fetchPreferences = async () => {
 			try {
-				const token = sessionStorage.getItem("expertToken");
+				const token = sessionStorage.getItem("authToken");
 
 				const res = await axios.get(
 					`${process.env.NEXT_PUBLIC_API}/expert/preference`,
@@ -82,7 +82,7 @@ export function PreferenceModule() {
 
 			} catch (err) {
 				console.error(err);
-				window.location.href = "/auth/login";
+				// window.location.href = "/auth/login";
 			}
 		};
 
@@ -113,7 +113,7 @@ export function PreferenceModule() {
 			const dass21_id = parseInt(selectedQuestion.replace("Q", ""), 10);
 
 			try {
-				const token = sessionStorage.getItem("expertToken");
+				const token = sessionStorage.getItem("authToken");
 
 				await axios.post(
 					`${process.env.NEXT_PUBLIC_API}/expert/preference`,

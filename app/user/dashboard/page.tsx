@@ -1,11 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Header } from "@/components/header"
-import { Calendar, TrendingUp, LogOut } from 'lucide-react'
-import Link from "next/link"
+import { LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { jwtDecode } from "jwt-decode"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
 
 interface DASS21Record {
 	id: string
@@ -46,26 +48,6 @@ export default function UserDashboardPage() {
 			stress: 25,
 			dominant: "Depresi",
 			notes: "Merasa lebih baik"
-		},
-		{
-			id: "2",
-			date: "10 Nov 2025",
-			timestamp: "02:15 PM",
-			depression: 25,
-			anxiety: 50,
-			stress: 25,
-			dominant: "Ansietas",
-			notes: "Cemas berlebihan tentang pekerjaan"
-		},
-		{
-			id: "3",
-			date: "05 Nov 2025",
-			timestamp: "09:45 AM",
-			depression: 30,
-			anxiety: 30,
-			stress: 40,
-			dominant: "Stres",
-			notes: ""
 		}
 	])
 
@@ -79,16 +61,6 @@ export default function UserDashboardPage() {
 			stress: { level: "Mild", score: 14 },
 			dominant: "Depresi",
 			notes: "Hasil dari sistem kepakaran"
-		},
-		{
-			id: "5",
-			date: "08 Nov 2025",
-			timestamp: "11:00 AM",
-			depression: { level: "Moderate", score: 18 },
-			anxiety: { level: "Severe", score: 32 },
-			stress: { level: "Moderate", score: 19 },
-			dominant: "Ansietas",
-			notes: "Perlu konsultasi lebih lanjut"
 		}
 	])
 
@@ -121,7 +93,7 @@ export default function UserDashboardPage() {
 	}, [])
 
 	const handleLogout = () => {
-		sessionStorage.removeItem("userSession")
+		sessionStorage.removeItem("authToken")
 		router.push("/")
 	}
 
@@ -159,11 +131,65 @@ export default function UserDashboardPage() {
 
 	return (
 		<main className="min-h-screen bg-background">
-			<Header />
+			{/* Header */}
+			<header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur-sm">
+				<div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+					<div>
+						<h1 className="text-2xl font-bold text-foreground">Dashboard User</h1>
+						<p className="text-sm text-muted-foreground">{userEmail}</p>
+					</div>
+					<Button variant="outline" size="sm" onClick={handleLogout} className="gap-2 bg-transparent">
+						<LogOut className="w-4 h-4" />
+						Logout
+					</Button>
+				</div>
+			</header>
+
+			{/* Main Content */}
+			<div className="max-w-7xl mx-auto px-4 py-8">
+				<Tabs
+					value={activeTab}
+					onValueChange={(value) => setActiveTab(value as "dass21" | "dass42")}
+					className="w-full mb-8"
+				>
+					<TabsList className="grid grid-cols-2 w-full h-full">
+						<TabsTrigger value="dass21" className="flex flex-col py-3">
+							<span className="text-sm font-medium">Sistem Pendukung Keputusan</span>
+							<span className="text-xs opacity-75">DASS-21</span>
+						</TabsTrigger>
+
+						<TabsTrigger value="dass42" className="flex flex-col py-3">
+							<span className="text-sm font-medium">Sistem Kepakaran</span>
+							<span className="text-xs opacity-75">DASS-42</span>
+						</TabsTrigger>
+					</TabsList>
+				</Tabs>
+
+				<Card className="mt-10 border-dashed">
+					<CardHeader className="pb-2">
+						<CardTitle className="text-lg flex items-center gap-2">
+							📢 Fitur Segera Hadir
+						</CardTitle>
+					</CardHeader>
+
+					<CardContent>
+						<p className="text-sm text-muted-foreground leading-relaxed">
+							Kami sedang menyiapkan fitur{" "}
+							<span className="font-medium text-foreground">riwayat deteksi lengkap</span>,
+							termasuk grafik perkembangan, detail analisis, dan kemampuan mengunduh laporan.
+							Fitur ini akan tersedia dalam pembaruan berikutnya.
+							<br />
+							<br />
+							Terima kasih atas kesabaran Anda!
+						</p>
+					</CardContent>
+				</Card>
+
+			</div>
 
 			<div className="max-w-6xl mx-auto px-4 py-8">
 				{/* Header Section */}
-				<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+				{/* <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
 					<div>
 						<h1 className="text-3xl font-bold text-foreground mb-2">Dashboard Saya</h1>
 						<p className="text-muted-foreground">Selamat datang, {userEmail}</p>
@@ -175,10 +201,10 @@ export default function UserDashboardPage() {
 						<LogOut className="w-4 h-4" />
 						Logout
 					</button>
-				</div>
+				</div> */}
 
 				{/* Tab Navigation */}
-				<div className="grid grid-cols-2 gap-3 mb-8">
+				{/* <div className="grid grid-cols-2 gap-3 mb-8">
 					<button
 						onClick={() => setActiveTab("dass21")}
 						className={`p-4 rounded-lg border transition-all font-medium ${activeTab === "dass21"
@@ -199,10 +225,10 @@ export default function UserDashboardPage() {
 						<div className="text-sm mb-1">Sistem Kepakaran</div>
 						<div className="text-xs opacity-75">DASS-42</div>
 					</button>
-				</div>
+				</div> */}
 
 				{/* Detection History */}
-				<div className="space-y-4">
+				{/* <div className="space-y-4">
 					<div className="flex items-center justify-between">
 						<h2 className="text-xl font-bold text-foreground">
 							Riwayat Deteksi {activeTab === "dass21" ? "DASS-21" : "DASS-42"}
@@ -300,10 +326,20 @@ export default function UserDashboardPage() {
 							))}
 						</div>
 					)}
-				</div>
+				</div> */}
+
+				{/* Coming Soon Notice */}
+				{/* <div className="mt-10 p-5 rounded-lg border border-dashed border-border/60 bg-muted/10">
+					<h3 className="text-lg font-semibold text-foreground mb-2">📢 Fitur Segera Hadir</h3>
+					<p className="text-sm text-muted-foreground leading-relaxed">
+						Kami sedang menyiapkan fitur <span className="font-medium text-foreground">riwayat deteksi lengkap</span>,
+						termasuk grafik perkembangan, detail analisis, dan kemampuan mengunduh laporan.
+						Fitur ini akan tersedia dalam pembaruan berikutnya. Terima kasih atas kesabaran Anda!
+					</p>
+				</div> */}
 
 				{/* Quick Actions */}
-				<div className="mt-12 p-6 rounded-lg border border-border/40 bg-muted/20">
+				{/* <div className="mt-12 p-6 rounded-lg border border-border/40 bg-muted/20">
 					<h3 className="text-lg font-bold text-foreground mb-4">Tindakan Cepat</h3>
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 						<Link
@@ -318,7 +354,7 @@ export default function UserDashboardPage() {
 							Lihat Laporan Detail
 						</button>
 					</div>
-				</div>
+				</div> */}
 			</div>
 		</main>
 	)

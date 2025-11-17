@@ -26,14 +26,14 @@ const features: FeatureCard[] = [
 		icon: <Zap className="w-6 h-6 text-accent" />,
 		title: "Preferensi Pakar (DASS-21)",
 		description: "Input preferensi dan konfigurasi sistem pendukung keputusan berdasarkan framework DASS-21",
-		badge: "Pakar 1",
+		badge: "Pakar",
 		action: "Konfigurasi",
 	},
 	{
 		icon: <Settings className="w-6 h-6 text-secondary" />,
 		title: "Ruleset Sistem (DASS-42)",
 		description: "Kelola dan optimalkan ruleset expert system menggunakan metodologi DASS-42 yang komprehensif",
-		badge: "Pakar 2",
+		badge: "Pakar",
 		action: "Kelola Ruleset",
 	},
 	{
