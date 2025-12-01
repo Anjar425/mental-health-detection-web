@@ -8,6 +8,7 @@ import { RulesetModule } from "@/components/expert/ruleset-module"
 import { PreferenceModule } from "@/components/expert/preference-module"
 import { ProfileInfluenceModule } from "@/components/expert/profile-influence-module"
 import { jwtDecode } from "jwt-decode"
+import { RankingModule } from "@/components/expert/ranking-module"
 
 
 export default function ExpertDashboard() {
@@ -78,11 +79,14 @@ export default function ExpertDashboard() {
 					</p>
 				</div>
 
-				<Tabs defaultValue="preference" className="w-full">
-					<TabsList className="grid w-full grid-cols-3 mb-6">
+				{/* Update: Tabs defaultValue bisa diubah ke 'ranking' jika ingin melihat fitur baru langsung */}
+				<Tabs defaultValue="ranking" className="w-full">
+					{/* Update: Grid cols menjadi 4 untuk mengakomodasi tab baru */}
+					<TabsList className="grid w-full grid-cols-4 mb-6">
 						<TabsTrigger value="preference">Preferensi DASS-21</TabsTrigger>
 						<TabsTrigger value="profile">Profil & Pengaruh</TabsTrigger>
 						<TabsTrigger value="ruleset">Ruleset DASS-42</TabsTrigger>
+						<TabsTrigger value="ranking">Ranking Pakar</TabsTrigger>
 					</TabsList>
 
 					{/* Tab 1: Ruleset Module */}
@@ -98,6 +102,11 @@ export default function ExpertDashboard() {
 					{/* Tab 3: Profile & Influence Module */}
 					<TabsContent value="profile" className="space-y-4">
 						<ProfileInfluenceModule />
+					</TabsContent>
+
+					{/* Tab 4: Ranking Module (New) */}
+					<TabsContent value="ranking" className="space-y-4">
+						<RankingModule />
 					</TabsContent>
 				</Tabs>
 			</div>
