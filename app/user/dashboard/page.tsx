@@ -1,361 +1,450 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { LogOut } from 'lucide-react'
+import { LogOut, Calendar, TrendingUp, Activity, ClipboardList, ArrowRight, AlertCircle, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { jwtDecode } from "jwt-decode"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import axios from "axios"
 
-
-interface DASS21Record {
-	id: string
-	date: string
-	timestamp: string
-	depression: number
-	anxiety: number
-	stress: number
-	dominant: "Depresi" | "Ansietas" | "Stres"
-	notes?: string
+// --- Interfaces ---
+interface HistoryItem {
+    id: number
+    created_at: string
+    type: string
+    depression_score: number
+    anxiety_score: number
+    stress_score: number
+    highest_severity: string
 }
 
-interface DASS42Record {
-	id: string
-	date: string
-	timestamp: string
-	depression: { level: string; score: number }
-	anxiety: { level: string; score: number }
-	stress: { level: string; score: number }
-	dominant: "Depresi" | "Ansietas" | "Stres"
-	notes?: string
+// --- Helpers ---
+
+// 1. Helper Warna Severity (Khusus DASS-42)
+const getSeverityColor = (level: string): string => {
+    const s = level?.toLowerCase() || ""
+    if (s === "normal") return "bg-green-100 text-green-800 border-green-300"
+    if (s === "mild") return "bg-blue-100 text-blue-800 border-blue-300"
+    if (s === "moderate") return "bg-yellow-100 text-yellow-800 border-yellow-300"
+    if (s === "severe") return "bg-orange-100 text-orange-800 border-orange-300"
+    if (s === "extremely severe") return "bg-red-100 text-red-800 border-red-300"
+    return "bg-gray-100 text-gray-800 border-gray-300"
 }
 
-type DetectionRecord = DASS21Record | DASS42Record
+// 2. Helper Dominant Symptom
+const getDominantSymptom = (d: number, a: number, s: number) => {
+    if (d >= a && d >= s) return { label: "Depresi", color: "blue" }
+    if (a >= d && a >= s) return { label: "Ansietas", color: "purple" }
+    return { label: "Stres", color: "amber" }
+}
+
+// 3. Helper Format Skor (Handling Decimal vs Integer untuk DASS-21)
+const formatDass21Score = (score: number) => {
+    // Jika skor <= 1 (misal 0.489), kita asumsikan itu desimal mentah -> kali 100
+    // Jika skor > 1 (misal 49), kita asumsikan itu sudah persen integer -> biarkan
+    if (score <= 1 && score > 0) {
+        return (score * 100).toFixed(2) + "%";
+    }
+    // Jika integer atau 0
+    return score + "%";
+}
+
 
 export default function UserDashboardPage() {
-	const router = useRouter()
-	const [activeTab, setActiveTab] = useState<"dass21" | "dass42">("dass21")
-	const [userEmail, setUserEmail] = useState("")
+    const router = useRouter()
+    
+    // --- State ---
+    const [userEmail, setUserEmail] = useState("")
+    const [loading, setLoading] = useState(true)
+    const [historyRecords, setHistoryRecords] = useState<HistoryItem[]>([])
+    
+    // State untuk Delete
+    const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
+    const [isDeleting, setIsDeleting] = useState(false)
 
-	const [dass21Records, setDass21Records] = useState<DASS21Record[]>([
-		{
-			id: "1",
-			date: "15 Nov 2025",
-			timestamp: "10:30 AM",
-			depression: 45,
-			anxiety: 30,
-			stress: 25,
-			dominant: "Depresi",
-			notes: "Merasa lebih baik"
-		}
-	])
+    // State untuk Pagination
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 5
 
-	const [dass42Records, setDass42Records] = useState<DASS42Record[]>([
-		{
-			id: "4",
-			date: "12 Nov 2025",
-			timestamp: "03:20 PM",
-			depression: { level: "Severe", score: 28 },
-			anxiety: { level: "Moderate", score: 20 },
-			stress: { level: "Mild", score: 14 },
-			dominant: "Depresi",
-			notes: "Hasil dari sistem kepakaran"
-		}
-	])
+    // --- Effects ---
+    useEffect(() => {
+        const token = sessionStorage.getItem("authToken")
+        
+        if (!token) {
+            router.push("/auth/login")
+            return
+        }
 
-	useEffect(() => {
-		const token = sessionStorage.getItem("authToken")
-		if (!token) {
-			window.location.href = "/auth/login"
-			return
-		}
+        const fetchData = async () => {
+            try {
+                // Decode Token
+                const payload: any = jwtDecode(token)
+                
+                // Cek Expired
+                if (payload.exp * 1000 < Date.now()) {
+                    sessionStorage.removeItem("authToken")
+                    router.push("/auth/login")
+                    return
+                }
 
-		try {
-			const payload: any = jwtDecode(token)
+                if (payload.role === "expert") {
+                    router.push("/expert/dashboard")
+                    return
+                }
 
-			if (payload.exp * 1000 < Date.now()) {
-				sessionStorage.removeItem("authToken")
-				window.location.href = "/auth/login"
-				return
-			}
+                setUserEmail(payload.sub || "Pengguna")
 
-			if (payload.role === "expert") {
-				window.location.href = "/expert/dashboard"
-			}
+                // Fetch Data Real
+                console.log("Fetching history data...")
+                const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/qdss/history`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                })
 
-			setUserEmail(payload.sub)
+                console.log("History Data Received:", response.data)
+                setHistoryRecords(response.data)
 
-		} catch (err) {
-			sessionStorage.removeItem("authToken")
-			window.location.href = "/auth/login"
-		}
-	}, [])
+            } catch (err) {
+                console.error("Error loading dashboard:", err)
+                if (axios.isAxiosError(err) && err.response?.status === 401) {
+                    sessionStorage.removeItem("authToken")
+                    router.push("/auth/login")
+                }
+            } finally {
+                setLoading(false)
+            }
+        }
 
-	const handleLogout = () => {
-		sessionStorage.removeItem("authToken")
-		router.push("/")
-	}
+        fetchData()
+    }, [router])
 
-	const getSeverityColor = (level: string) => {
-		switch (level) {
-			case "Normal":
-				return "bg-green-100 text-green-800"
-			case "Mild":
-				return "bg-blue-100 text-blue-800"
-			case "Moderate":
-				return "bg-yellow-100 text-yellow-800"
-			case "Severe":
-				return "bg-orange-100 text-orange-800"
-			case "Extremely Severe":
-				return "bg-red-100 text-red-800"
-			default:
-				return "bg-gray-100 text-gray-800"
-		}
-	}
 
-	const getDominantColor = (dominant: string) => {
-		switch (dominant) {
-			case "Depresi":
-				return "border-l-4 border-l-blue-500"
-			case "Ansietas":
-				return "border-l-4 border-l-purple-500"
-			case "Stres":
-				return "border-l-4 border-l-amber-500"
-			default:
-				return ""
-		}
-	}
+    // --- Handlers ---
+    const handleLogout = () => {
+        sessionStorage.removeItem("authToken")
+        router.push("/")
+    }
 
-	const records = activeTab === "dass21" ? dass21Records : dass42Records
+    const handleDeleteHistory = async (historyId: number) => {
+        setIsDeleting(true)
+        try {
+            const token = sessionStorage.getItem("authToken")
+            if (!token) {
+                router.push("/auth/login")
+                return
+            }
 
-	return (
-		<main className="min-h-screen bg-background">
-			{/* Header */}
-			<header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur-sm">
-				<div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-					<div>
-						<h1 className="text-2xl font-bold text-foreground">Dashboard User</h1>
-						<p className="text-sm text-muted-foreground">{userEmail}</p>
-					</div>
-					<Button variant="outline" size="sm" onClick={handleLogout} className="gap-2 bg-transparent">
-						<LogOut className="w-4 h-4" />
-						Logout
-					</Button>
-				</div>
-			</header>
+            await axios.delete(
+                `${process.env.NEXT_PUBLIC_API}/qdss/history/${historyId}`,
+                { headers: { "Authorization": `Bearer ${token}` } }
+            )
 
-			{/* Main Content */}
-			<div className="max-w-7xl mx-auto px-4 py-8">
-				<Tabs
-					value={activeTab}
-					onValueChange={(value) => setActiveTab(value as "dass21" | "dass42")}
-					className="w-full mb-8"
-				>
-					<TabsList className="grid grid-cols-2 w-full h-full">
-						<TabsTrigger value="dass21" className="flex flex-col py-3">
-							<span className="text-sm font-medium">Sistem Pendukung Keputusan</span>
-							<span className="text-xs opacity-75">DASS-21</span>
-						</TabsTrigger>
+            // Update UI setelah hapus
+            setHistoryRecords(prevData => prevData.filter(record => record.id !== historyId))
+            setDeleteConfirm(null)
+            
+            // Reset page jika item di halaman terakhir habis
+            if (currentItems.length === 1 && currentPage > 1) {
+                setCurrentPage(prev => prev - 1)
+            }
 
-						<TabsTrigger value="dass42" className="flex flex-col py-3">
-							<span className="text-sm font-medium">Sistem Kepakaran</span>
-							<span className="text-xs opacity-75">DASS-42</span>
-						</TabsTrigger>
-					</TabsList>
-				</Tabs>
+        } catch (error: any) {
+            console.error("Delete failed:", error)
+            alert("Gagal menghapus riwayat. Silakan coba lagi.")
+        } finally {
+            setIsDeleting(false)
+        }
+    }
 
-				<Card className="mt-10 border-dashed">
-					<CardHeader className="pb-2">
-						<CardTitle className="text-lg flex items-center gap-2">
-							📢 Fitur Segera Hadir
-						</CardTitle>
-					</CardHeader>
+    // --- Pagination Logic ---
+    const indexOfLastItem = currentPage * itemsPerPage
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage
+    const currentItems = historyRecords.slice(indexOfFirstItem, indexOfLastItem)
+    const totalPages = Math.ceil(historyRecords.length / itemsPerPage)
 
-					<CardContent>
-						<p className="text-sm text-muted-foreground leading-relaxed">
-							Kami sedang menyiapkan fitur{" "}
-							<span className="font-medium text-foreground">riwayat deteksi lengkap</span>,
-							termasuk grafik perkembangan, detail analisis, dan kemampuan mengunduh laporan.
-							Fitur ini akan tersedia dalam pembaruan berikutnya.
-							<br />
-							<br />
-							Terima kasih atas kesabaran Anda!
-						</p>
-					</CardContent>
-				</Card>
+    const nextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages))
+    const prevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1))
 
-			</div>
+    // --- Date Formatting ---
+    const formatDate = (isoString: string) => {
+        return new Date(isoString).toLocaleDateString("id-ID", {
+            day: "numeric", month: "short", year: "numeric"
+        })
+    }
+    const formatTime = (isoString: string) => {
+        return new Date(isoString).toLocaleTimeString("id-ID", {
+            hour: "2-digit", minute: "2-digit"
+        })
+    }
 
-			<div className="max-w-6xl mx-auto px-4 py-8">
-				{/* Header Section */}
-				{/* <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-					<div>
-						<h1 className="text-3xl font-bold text-foreground mb-2">Dashboard Saya</h1>
-						<p className="text-muted-foreground">Selamat datang, {userEmail}</p>
-					</div>
-					<button
-						onClick={handleLogout}
-						className="flex items-center gap-2 px-4 py-2 bg-muted text-foreground hover:bg-muted/80 rounded-lg transition-colors font-medium text-sm"
-					>
-						<LogOut className="w-4 h-4" />
-						Logout
-					</button>
-				</div> */}
 
-				{/* Tab Navigation */}
-				{/* <div className="grid grid-cols-2 gap-3 mb-8">
-					<button
-						onClick={() => setActiveTab("dass21")}
-						className={`p-4 rounded-lg border transition-all font-medium ${activeTab === "dass21"
-							? "border-primary bg-primary/5 text-primary"
-							: "border-border/40 bg-card text-muted-foreground hover:border-border/60"
-							}`}
-					>
-						<div className="text-sm mb-1">Sistem Pendukung Keputusan</div>
-						<div className="text-xs opacity-75">DASS-21</div>
-					</button>
-					<button
-						onClick={() => setActiveTab("dass42")}
-						className={`p-4 rounded-lg border transition-all font-medium ${activeTab === "dass42"
-							? "border-primary bg-primary/5 text-primary"
-							: "border-border/40 bg-card text-muted-foreground hover:border-border/60"
-							}`}
-					>
-						<div className="text-sm mb-1">Sistem Kepakaran</div>
-						<div className="text-xs opacity-75">DASS-42</div>
-					</button>
-				</div> */}
+    // --- Render ---
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="flex flex-col items-center gap-2">
+                    <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-muted-foreground text-sm">Memuat data anda...</p>
+                </div>
+            </div>
+        )
+    }
 
-				{/* Detection History */}
-				{/* <div className="space-y-4">
-					<div className="flex items-center justify-between">
-						<h2 className="text-xl font-bold text-foreground">
-							Riwayat Deteksi {activeTab === "dass21" ? "DASS-21" : "DASS-42"}
-						</h2>
-						<div className="text-sm text-muted-foreground">
-							Total: {records.length} deteksi
-						</div>
-					</div>
+    return (
+        <main className="min-h-screen bg-background pb-10">
+            {/* Header */}
+            <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur-sm">
+                <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold text-foreground">Dashboard Saya</h1>
+                        <p className="text-sm text-muted-foreground">Login sebagai: {userEmail}</p>
+                    </div>
+                    <Button 
+                        variant="outline" size="sm" onClick={handleLogout} 
+                        className="gap-2 bg-transparent hover:bg-muted"
+                    >
+                        <LogOut className="w-4 h-4" /> Keluar
+                    </Button>
+                </div>
+            </header>
 
-					{records.length === 0 ? (
-						<div className="text-center py-12 rounded-lg border border-border/40 bg-muted/20">
-							<TrendingUp className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
-							<p className="text-muted-foreground mb-4">Belum ada riwayat deteksi</p>
-							<Link
-								href="/"
-								className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
-							>
-								Mulai Deteksi Sekarang
-							</Link>
-						</div>
-					) : (
-						<div className="space-y-3">
-							{records.map((record) => (
-								<div
-									key={record.id}
-									className={`p-4 rounded-lg border border-border/40 bg-card hover:border-border/60 transition-colors ${getDominantColor(record.dominant)}`}
-								>
-									<div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-										<div className="flex-1">
-											<div className="flex items-center gap-2 mb-3">
-												<Calendar className="w-4 h-4 text-muted-foreground" />
-												<span className="text-sm font-medium text-foreground">{record.date}</span>
-												<span className="text-xs text-muted-foreground">{record.timestamp}</span>
-											</div>
+            <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+                
+                {/* Section 1: Pilihan Tes */}
+                <section>
+                    <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                        <Activity className="w-5 h-5 text-primary" /> Mulai Deteksi Baru
+                    </h2>
+                    <div className="grid gap-6 md:grid-cols-2">
+                        {/* Card DASS-21 */}
+                        <Card className="hover:shadow-lg transition-all border-l-4 border-l-blue-500 bg-gradient-to-br from-background to-blue-50/20">
+                            <CardHeader>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <CardTitle className="text-lg text-blue-700">DASS-21 (Cepat)</CardTitle>
+                                        <CardDescription className="mt-1">Skrining ringkas 21 pertanyaan</CardDescription>
+                                    </div>
+                                    <Badge variant="secondary" className="bg-blue-100 text-blue-700">Populer</Badge>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground">
+                                    Cocok untuk pemeriksaan rutin. Mengukur tingkat stres, kecemasan, dan depresi dalam waktu singkat (~3 menit).
+                                </p>
+                            </CardContent>
+                            <CardFooter>
+                                <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => router.push('/detection/dass21')}>
+                                    Mulai DASS-21 <ArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
+                            </CardFooter>
+                        </Card>
 
-											{activeTab === "dass21" ? (
-												<div className="space-y-2">
-													<div className="grid grid-cols-3 gap-3">
-														<div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-															<div className="text-xs text-muted-foreground mb-1">Depresi</div>
-															<div className="text-xl font-bold text-blue-600 dark:text-blue-400">{(record as DASS21Record).depression}%</div>
-														</div>
-														<div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
-															<div className="text-xs text-muted-foreground mb-1">Ansietas</div>
-															<div className="text-xl font-bold text-purple-600 dark:text-purple-400">{(record as DASS21Record).anxiety}%</div>
-														</div>
-														<div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg">
-															<div className="text-xs text-muted-foreground mb-1">Stres</div>
-															<div className="text-xl font-bold text-amber-600 dark:text-amber-400">{(record as DASS21Record).stress}%</div>
-														</div>
-													</div>
-													<div className="bg-muted/50 px-3 py-2 rounded-lg">
-														<span className="text-xs text-muted-foreground">Dominan: </span>
-														<span className="text-sm font-semibold text-foreground">{record.dominant}</span>
-													</div>
-												</div>
-											) : (
-												<div className="space-y-2">
-													<div className="grid grid-cols-3 gap-3">
-														<div className="border border-border/40 p-3 rounded-lg">
-															<div className="text-xs text-muted-foreground mb-1">Depresi</div>
-															<div className="text-sm font-semibold text-foreground mb-1">{(record as DASS42Record).depression.score}</div>
-															<span className={`text-xs px-2 py-1 rounded-full ${getSeverityColor((record as DASS42Record).depression.level)}`}>
-																{(record as DASS42Record).depression.level}
-															</span>
-														</div>
-														<div className="border border-border/40 p-3 rounded-lg">
-															<div className="text-xs text-muted-foreground mb-1">Ansietas</div>
-															<div className="text-sm font-semibold text-foreground mb-1">{(record as DASS42Record).anxiety.score}</div>
-															<span className={`text-xs px-2 py-1 rounded-full ${getSeverityColor((record as DASS42Record).anxiety.level)}`}>
-																{(record as DASS42Record).anxiety.level}
-															</span>
-														</div>
-														<div className="border border-border/40 p-3 rounded-lg">
-															<div className="text-xs text-muted-foreground mb-1">Stres</div>
-															<div className="text-sm font-semibold text-foreground mb-1">{(record as DASS42Record).stress.score}</div>
-															<span className={`text-xs px-2 py-1 rounded-full ${getSeverityColor((record as DASS42Record).stress.level)}`}>
-																{(record as DASS42Record).stress.level}
-															</span>
-														</div>
-													</div>
-													<div className="bg-muted/50 px-3 py-2 rounded-lg">
-														<span className="text-xs text-muted-foreground">Paling Dominan: </span>
-														<span className="text-sm font-semibold text-foreground">{record.dominant}</span>
-													</div>
-												</div>
-											)}
+                        {/* Card DASS-42 */}
+                        <Card className="hover:shadow-lg transition-all border-l-4 border-l-purple-500 bg-gradient-to-br from-background to-purple-50/20">
+                            <CardHeader>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <CardTitle className="text-lg text-purple-700">DASS-42 (Lengkap)</CardTitle>
+                                        <CardDescription className="mt-1">Analisis mendalam 42 pertanyaan</CardDescription>
+                                    </div>
+                                    <Badge variant="secondary" className="bg-purple-100 text-purple-700">Detail</Badge>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground">
+                                    Memberikan gambaran klinis yang lebih komprehensif. Direkomendasikan jika Anda memiliki keluhan spesifik (~7 menit).
+                                </p>
+                            </CardContent>
+                            <CardFooter>
+                                <Button className="w-full bg-purple-600 hover:bg-purple-700" onClick={() => router.push('/detection/dass42')}>
+                                    Mulai DASS-42 <ArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </div>
+                </section>
 
-											{record.notes && (
-												<p className="text-sm text-muted-foreground mt-3">Catatan: {record.notes}</p>
-											)}
-										</div>
-									</div>
-								</div>
-							))}
-						</div>
-					)}
-				</div> */}
+                {/* Section 2: Riwayat Deteksi */}
+                <Card className="border-border/50 shadow-sm">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Calendar className="w-5 h-5 text-primary" />
+                                    Riwayat Hasil
+                                </CardTitle>
+                                <CardDescription className="mt-1">
+                                    Total: {historyRecords.length} kali deteksi
+                                </CardDescription>
+                            </div>
+                            <Badge variant="outline" className="hidden sm:flex">
+                                <TrendingUp className="w-3 h-3 mr-1" /> Data Terbaru
+                            </Badge>
+                        </div>
+                    </CardHeader>
 
-				{/* Coming Soon Notice */}
-				{/* <div className="mt-10 p-5 rounded-lg border border-dashed border-border/60 bg-muted/10">
-					<h3 className="text-lg font-semibold text-foreground mb-2">📢 Fitur Segera Hadir</h3>
-					<p className="text-sm text-muted-foreground leading-relaxed">
-						Kami sedang menyiapkan fitur <span className="font-medium text-foreground">riwayat deteksi lengkap</span>,
-						termasuk grafik perkembangan, detail analisis, dan kemampuan mengunduh laporan.
-						Fitur ini akan tersedia dalam pembaruan berikutnya. Terima kasih atas kesabaran Anda!
-					</p>
-				</div> */}
+                    <CardContent>
+                        {historyRecords.length === 0 ? (
+                            <div className="text-center py-12 rounded-lg border border-dashed border-border/50 bg-muted/20">
+                                <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
+                                    <AlertCircle className="w-8 h-8 text-muted-foreground" />
+                                </div>
+                                <h3 className="text-lg font-semibold text-foreground mb-1">Belum Ada Data</h3>
+                                <p className="text-sm text-muted-foreground mb-6 max-w-xs mx-auto">
+                                    Hasil deteksi Anda akan muncul di sini setelah Anda menyelesaikan tes pertama.
+                                </p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="overflow-x-auto rounded-md border">
+                                    <table className="w-full text-sm text-left">
+                                        <thead className="bg-muted/40 text-muted-foreground uppercase text-xs">
+                                            <tr>
+                                                <th className="px-6 py-3">Tanggal</th>
+                                                <th className="px-6 py-3">Tipe</th>
+                                                <th className="px-6 py-3">Dominan</th>
+                                                <th className="px-6 py-3 text-center">Skor (D / A / S)</th>
+                                                {/* <th className="px-6 py-3">Status / Severity</th> */}
+                                                <th className="px-6 py-3 text-center">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-border/50">
+                                            {currentItems.map((record) => {
+                                                const dominant = getDominantSymptom(record.depression_score, record.anxiety_score, record.stress_score)
+                                                // Cek apakah tipe 21 atau 42
+                                                const isDass21 = record.type === "21" || record.type === "DASS-21"
 
-				{/* Quick Actions */}
-				{/* <div className="mt-12 p-6 rounded-lg border border-border/40 bg-muted/20">
-					<h3 className="text-lg font-bold text-foreground mb-4">Tindakan Cepat</h3>
-					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-						<Link
-							href="/"
-							className="p-4 rounded-lg border border-border/40 bg-card hover:border-primary hover:bg-primary/5 transition-all text-center font-medium text-foreground"
-						>
-							Mulai Deteksi Baru
-						</Link>
-						<button
-							className="p-4 rounded-lg border border-border/40 bg-card hover:border-primary hover:bg-primary/5 transition-all text-center font-medium text-foreground"
-						>
-							Lihat Laporan Detail
-						</button>
-					</div>
-				</div> */}
-			</div>
-		</main>
-	)
+                                                return (
+                                                    <tr key={record.id} className="hover:bg-muted/30 transition-colors">
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex flex-col">
+                                                                <span className="font-medium text-foreground">{formatDate(record.created_at)}</span>
+                                                                <span className="text-xs text-muted-foreground">{formatTime(record.created_at)}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <Badge variant="outline" className="font-mono">
+                                                                DASS-{record.type}
+                                                            </Badge>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${dominant.color}-100 text-${dominant.color}-800`}>
+                                                                {dominant.label}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-center">
+                                                            {/* LOGIKA FORMAT SKOR: Jika DASS-21 pakai Persen, Jika 42 pakai Angka Biasa */}
+                                                            <div className="flex items-center justify-center gap-3 font-medium text-xs">
+                                                                <div title="Depresi" className="flex flex-col">
+                                                                    <span className="text-blue-600">
+                                                                        {isDass21 ? formatDass21Score(record.depression_score) : record.depression_score}
+                                                                    </span>
+                                                                    <span className="text-[10px] text-muted-foreground">Dep</span>
+                                                                </div>
+                                                                <div className="w-px h-6 bg-border"></div>
+                                                                <div title="Ansietas" className="flex flex-col">
+                                                                    <span className="text-purple-600">
+                                                                        {isDass21 ? formatDass21Score(record.anxiety_score) : record.anxiety_score}
+                                                                    </span>
+                                                                    <span className="text-[10px] text-muted-foreground">Ans</span>
+                                                                </div>
+                                                                <div className="w-px h-6 bg-border"></div>
+                                                                <div title="Stres" className="flex flex-col">
+                                                                    <span className="text-orange-600">
+                                                                        {isDass21 ? formatDass21Score(record.stress_score) : record.stress_score}
+                                                                    </span>
+                                                                    <span className="text-[10px] text-muted-foreground">Str</span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        {/* <td className="px-6 py-4">
+                                                            
+                                                            {isDass21 ? (
+                                                                <span className="text-muted-foreground text-center block">-</span>
+                                                            ) : (
+                                                                <span className={`inline-block px-3 py-1 rounded-md text-xs font-semibold border ${getSeverityColor(record.highest_severity)}`}>
+                                                                    {record.highest_severity}
+                                                                </span>
+                                                            )}
+                                                        </td> */}
+                                                        <td className="px-6 py-4 text-center">
+                                                            <Button
+                                                                variant="ghost" size="sm"
+                                                                onClick={() => setDeleteConfirm(record.id)}
+                                                                className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                                disabled={isDeleting}
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </Button>
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* Pagination Controls */}
+                                {historyRecords.length > itemsPerPage && (
+                                    <div className="flex items-center justify-between mt-4">
+                                        <p className="text-sm text-muted-foreground">
+                                            Halaman {currentPage} dari {totalPages}
+                                        </p>
+                                        <div className="flex gap-2">
+                                            <Button 
+                                                variant="outline" size="sm" 
+                                                onClick={prevPage} disabled={currentPage === 1}
+                                                className="gap-1"
+                                            >
+                                                <ChevronLeft className="w-4 h-4" /> Prev
+                                            </Button>
+                                            <Button 
+                                                variant="outline" size="sm" 
+                                                onClick={nextPage} disabled={currentPage === totalPages}
+                                                className="gap-1"
+                                            >
+                                                Next <ChevronRight className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={deleteConfirm !== null} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Hapus Riwayat Deteksi?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Apakah Anda yakin ingin menghapus riwayat deteksi ini? Tindakan ini tidak dapat dibatalkan.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="flex gap-3 justify-end">
+                        <AlertDialogCancel disabled={isDeleting}>Batal</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => deleteConfirm !== null && handleDeleteHistory(deleteConfirm)}
+                            disabled={isDeleting}
+                            className="bg-destructive hover:bg-destructive/90"
+                        >
+                            {isDeleting ? "Menghapus..." : "Hapus"}
+                        </AlertDialogAction>
+                    </div>
+                </AlertDialogContent>
+            </AlertDialog>
+        </main>
+    )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { QuestionCard } from "@/components/dass42/question-card"
 import { ResultsCard } from "@/components/dass42/results-card"
 import axios from "axios"
+import { jwtDecode } from "jwt-decode"
 
 const dassQuestions = [
     // Depression items (1, 3, 5, 10, 13, 16, 17, 21, 24, 26, 31, 34, 37, 38, 42)
@@ -92,7 +93,30 @@ export function DassQuestionnaire() {
     const [responses, setResponses] = useState<Record<number, number | string>>({})
     const [isCompleted, setIsCompleted] = useState(false)
     const [apiData, setApiData] = useState(null)
-    const [isLoading, setIsloading] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [userToken, setUserToken] = useState<string | null>(null)
+    const [userRole, setUserRole] = useState<"user" | "guest">("guest")
+
+    // Cek token saat komponen di-load
+    useEffect(() => {
+        const token = sessionStorage.getItem("authToken")
+        setUserToken(token)
+        
+        // Tentukan role berdasarkan token
+        if (token) {
+            try {
+                const decoded: any = jwtDecode(token)
+                setUserRole(decoded.role === "user" ? "user" : "guest")
+                console.log("✅ User authenticated with role:", decoded.role)
+            } catch (err) {
+                console.warn("⚠️ Failed to decode token:", err)
+                setUserRole("guest")
+            }
+        } else {
+            setUserRole("guest")
+            console.log("📝 Running as guest (no token)")
+        }
+    }, [])
 
     const handleResponse = (questionId: number, value: number | string) => {
         const roundedValue = Math.round(Number(value) * 10) / 10
@@ -115,33 +139,64 @@ export function DassQuestionnaire() {
     }
 
     const submitToInference = async () => {
-        setIsloading(true)
-        const questionnaire_responses: Record<string, number> = {};
+        setIsSubmitting(true)
+        const questionnaire_responses: Record<string, number> = {}
 
         for (let i = 1; i <= 42; i++) {
-            questionnaire_responses[`Q${i}`] = Number(responses[i] ?? 0);
+            questionnaire_responses[`Q${i}`] = Number(responses[i] ?? 0)
         }
 
         try {
-            const res = await axios.post(
-                `${process.env.NEXT_PUBLIC_API}/inference/compute`,
-                { questionnaire_responses },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
+            console.log("📋 DASS-42 Submission Started")
+            console.log("📤 Payload:", JSON.stringify(questionnaire_responses, null, 2))
+            console.log("🔐 Token present:", !!userToken)
+            if (userToken) {
+                console.log("🔐 Token preview:", `${userToken.substring(0, 20)}...`)
+            }
+
+            let endpoint = ""
+            let config: any = {
+                headers: {
+                    "Content-Type": "application/json"
                 }
-            );
+            }
 
+            // Tentukan endpoint berdasarkan user login
+            if (userToken) {
+                // User Login - Simpan ke database
+                endpoint = `${process.env.NEXT_PUBLIC_API}/inference/compute`
+                config.headers["Authorization"] = `Bearer ${userToken}`
+                console.log("👤 Submitting as: Authenticated User")
+                console.log("✅ Authorization header set:", `Bearer ${userToken.substring(0, 20)}...`)
+            } else {
+                // Guest - Hanya hitung tanpa menyimpan
+                endpoint = `${process.env.NEXT_PUBLIC_API}/inference/compute/public`
+                console.log("👥 Submitting as: Guest")
+            }
+
+            console.log("🌐 Endpoint:", endpoint)
+            console.log("📋 Config headers:", config.headers)
+
+            const res = await axios.post(
+                endpoint,
+                { questionnaire_responses },
+                config
+            )
+
+            console.log("✅ API Response Success:", res.data)
             setApiData(res.data)
-            setIsloading(false)
+            setIsSubmitting(false)
 
-            return res.data;
-        } catch (err) {
-            console.error("Inference compute error:", err);
-            return null;
+            return res.data
+        } catch (err: any) {
+            console.error("❌ Inference compute error:", err)
+            console.error("❌ Response status:", err?.response?.status)
+            console.error("❌ Response data:", err?.response?.data)
+            console.error("❌ Error message:", err?.message)
+            setIsSubmitting(false)
+            return null
         }
-    };
+    }
 
     const progress = ((currentQuestion + 1) / dassQuestions.length) * 100
     const currentQuestionData = dassQuestions[currentQuestion]

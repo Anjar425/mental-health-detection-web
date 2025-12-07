@@ -60,7 +60,7 @@ export function RankingModule() {
     fetchData()
   }, [])
 
-  if (loading) return <div className="p-8 text-center text-muted-foreground animate-pulse">Memuat analisis ranking SAW...</div>
+  if (loading) return <div className="p-8 text-center text-muted-foreground animate-pulse">Memuat analisis ranking...</div>
   if (error) return <div className="p-8 text-center text-destructive flex flex-col items-center gap-2"><AlertCircle />{error}</div>
   if (!data) return null
 
@@ -118,7 +118,7 @@ export function RankingModule() {
             Peringkat Rekomendasi Pakar
           </CardTitle>
           <CardDescription>
-            Skor dihitung berdasarkan profil pakar dikalikan dengan <b>Rata-rata Bobot Global</b> (Simulasi SAW).
+            Skor dihitung berdasarkan profil pakar dikalikan dengan <b>Rata-rata Bobot Global</b> (Simulasi).
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -154,7 +154,7 @@ export function RankingModule() {
                 {/* Total Score Bar */}
                 <div className="flex-1 w-full md:max-w-[300px] space-y-1">
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="font-medium text-muted-foreground">Total Skor SAW</span>
+                    <span className="font-medium text-muted-foreground">Total Skor</span>
                     <span className="font-bold text-foreground">{expert.score}</span>
                   </div>
                   <div className="h-3 w-full bg-secondary/30 rounded-full overflow-hidden">
