@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -8,7 +8,10 @@ import { Badge } from "@/components/ui/badge"
 import { QuestionCard } from "@/components/dass21/question-card"
 import { ResultsCard } from "@/components/dass21/results-card"
 import axios from "axios"
+import { jwtDecode } from "jwt-decode"
 
+// Pastikan jumlah pertanyaan sesuai dengan DASS-21 (21 soal) atau DASS-42 (42 soal)
+// Di array ini jumlahnya 21, jadi kita set type nanti ke "21"
 const dassQuestions = [
     { id: 1, text: "Saya merasa sulit untuk menenangkan diri.", category: "stress" },
     { id: 2, text: "Saya merasa mulut saya kering.", category: "anxiety" },
@@ -56,6 +59,30 @@ export function DassQuestionnaire() {
     const [responses, setResponses] = useState<Record<number, number>>({})
     const [isCompleted, setIsCompleted] = useState(false)
     const [apiResult, setApiResult] = useState<Result>()
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [userToken, setUserToken] = useState<string | null>(null)
+    const [userRole, setUserRole] = useState<"user" | "guest">("guest")
+
+    // Cek apakah user login saat komponen di-load
+    useEffect(() => {
+        const token = sessionStorage.getItem("authToken")
+        setUserToken(token)
+        
+        // Tentukan role berdasarkan token
+        if (token) {
+            try {
+                const decoded: any = jwtDecode(token)
+                setUserRole(decoded.role === "user" ? "user" : "guest")
+                console.log("✅ User authenticated with role:", decoded.role)
+            } catch (err) {
+                console.warn("⚠️ Failed to decode token:", err)
+                setUserRole("guest")
+            }
+        } else {
+            setUserRole("guest")
+            console.log("📝 Running as guest (no token)")
+        }
+    }, [])
 
     const handleResponse = (questionId: number, value: number | string) => {
         const roundedValue = Math.round(Number(value) * 10) / 10
@@ -77,23 +104,70 @@ export function DassQuestionnaire() {
     }
 
     const submitResult = async () => {
+        setIsSubmitting(true)
         try {
+            // 1. Siapkan Data
             const scores = dassQuestions.map(q => Number(responses[q.id] ?? 0))
-            const payload = { scores }
-            console.log(JSON.stringify(payload, null, 2))
+            const payload = { 
+                scores,
+                type: "21" // PENTING: Backend butuh field ini
+            }
+            
+            console.log("📋 DASS-21 Submission Started")
+            console.log("📤 Payload:", JSON.stringify(payload, null, 2))
+            console.log("🔐 Token present:", !!userToken)
+            if (userToken) {
+                console.log("🔐 Token preview:", `${userToken.substring(0, 20)}...`)
+            }
 
-            const res = await axios.post(
-                `${process.env.NEXT_PUBLIC_API}/qdss`,
-                payload
-            )
+            let endpoint = ""
+            let config: any = {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }
 
-            console.log("aaa" + JSON.stringify(responses, null, 2))
+            // 2. Tentukan Logic: User vs Guest
+            if (userToken) {
+                // CASE A: User Login (Simpan History)
+                endpoint = `${process.env.NEXT_PUBLIC_API}/qdss`
+                config.headers["Authorization"] = `Bearer ${userToken}`
+                
+                console.log("👤 Submitting as: Authenticated User")
+                console.log("✅ Authorization header set:", `Bearer ${userToken.substring(0, 20)}...`)
+            } else {
+                // CASE B: Guest (Hanya Hitung / Public)
+                endpoint = `${process.env.NEXT_PUBLIC_API}/qdss/public` 
+                console.log("👥 Submitting as: Guest")
+            }
 
+            console.log("🌐 Endpoint:", endpoint)
+            console.log("📋 Config headers:", config.headers)
+
+            // 3. Kirim Request
+            const res = await axios.post(endpoint, payload, config)
+
+            // 4. Handle Response
+            console.log("✅ API Response Success:", res.data)
             setApiResult(res.data)
             setIsCompleted(true)
-            console.log("API Result:", res.data)
-        } catch (error) {
-            console.error("Failed to submit:", error)
+
+        } catch (error: any) {
+            console.error("❌ Failed to submit:", error)
+            console.error("❌ Response status:", error?.response?.status)
+            console.error("❌ Response data:", error?.response?.data)
+            console.error("❌ Error message:", error?.message)
+            
+            // Optional: Tampilkan alert jika error spesifik
+            if (error.response?.status === 401) {
+                alert("Sesi Anda habis. Silakan login ulang.")
+            } else if (error.response?.status === 404 && !userToken) {
+                alert("Endpoint Guest belum tersedia. Silakan Login untuk melakukan tes.")
+            } else {
+                alert("Terjadi kesalahan saat memproses data.")
+            }
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
@@ -105,11 +179,13 @@ export function DassQuestionnaire() {
         return (
             <ResultsCard
                 scores={apiResult}
+                userRole={userRole}
                 onRestart={() => {
                     setCurrentQuestion(0)
                     setResponses({})
                     setIsCompleted(false)
-                    window.location.href = "/"
+                    // Opsional: Redirect atau reset state saja
+                    // window.location.href = "/" 
                 }}
             />
         )
@@ -120,10 +196,22 @@ export function DassQuestionnaire() {
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8 pt-8">
-                    <h1 className="text-4xl font-bold text-foreground mb-4 text-balance">Kuisioner DASS-42</h1>
+                    <h1 className="text-4xl font-bold text-foreground mb-4 text-balance">
+                        Kuisioner DASS-21
+                    </h1>
                     <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-                        Skala Depresi, Kecemasan, dan Stres - 42 Item untuk evaluasi kesehatan mental
+                        Skala Depresi, Kecemasan, dan Stres - {dassQuestions.length} Item
                     </p>
+                    
+                    {/* Indikator Status Login (Optional) */}
+                    <div className="mt-2">
+                         {userToken ? (
+                            <Badge variant="default" className="bg-green-600">Mode: Pengguna (Hasil Disimpan)</Badge>
+                         ) : (
+                            <Badge variant="outline">Mode: Tamu (Hasil Tidak Disimpan)</Badge>
+                         )}
+                    </div>
+
                     <div className="flex items-center justify-center gap-4 mt-6">
                         <Badge variant="secondary" className="text-sm">
                             Pertanyaan {currentQuestion + 1} dari {dassQuestions.length}
@@ -154,7 +242,7 @@ export function DassQuestionnaire() {
                     <Button
                         variant="outline"
                         onClick={handlePrevious}
-                        disabled={currentQuestion === 0}
+                        disabled={currentQuestion === 0 || isSubmitting}
                         className="px-6 bg-transparent"
                     >
                         Sebelumnya
@@ -164,8 +252,12 @@ export function DassQuestionnaire() {
                         {Object.keys(responses).length} dari {dassQuestions.length} pertanyaan dijawab
                     </div>
 
-                    <Button onClick={handleNext} disabled={currentResponse === undefined} className="px-6">
-                        {currentQuestion === dassQuestions.length - 1 ? "Selesai" : "Selanjutnya"}
+                    <Button 
+                        onClick={handleNext} 
+                        disabled={currentResponse === undefined || isSubmitting} 
+                        className="px-6"
+                    >
+                        {isSubmitting ? "Memproses..." : (currentQuestion === dassQuestions.length - 1 ? "Selesai" : "Selanjutnya")}
                     </Button>
                 </div>
 

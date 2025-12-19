@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart"
 import { Pie, PieChart } from "recharts"
+import { useRouter } from "next/navigation"
 
 interface Scores {
 	depression: number
@@ -15,11 +16,24 @@ interface Scores {
 
 interface ResultsCardProps {
 	scores: Scores
+	userRole: "user" | "guest"
 	onRestart: () => void
 }
 
 
-export function ResultsCard({ scores, onRestart }: ResultsCardProps) {
+export function ResultsCard({ scores, userRole, onRestart }: ResultsCardProps) {
+	const router = useRouter()
+
+	const handleBackToDashboard = () => {
+		console.log("🔄 Navigation triggered. User role:", userRole)
+		if (userRole === "user") {
+			console.log("➡️ Redirecting to: /user/dashboard")
+			router.push("/user/dashboard")
+		} else {
+			console.log("➡️ Redirecting to: /")
+			router.push("/")
+		}
+	}
 	const chartData = [
 		{ browser: "Depresi", visitors: Number((scores.depression * 100).toFixed(2)), fill: "var(--chart-1)" },
 		{ browser: "Kecemasan", visitors: Number((scores.anxiety * 100).toFixed(2)), fill: "var(--chart-2)" },
@@ -156,17 +170,15 @@ export function ResultsCard({ scores, onRestart }: ResultsCardProps) {
 					</CardContent>
 				</Card> */}
 
-				{/* Actions */}
-				<div className="flex justify-center gap-4">
-					<Button onClick={onRestart} variant="outline" className="px-8 bg-transparent">
-						Kembali ke Home
-					</Button>
-					<Button onClick={() => window.print()} className="px-8">
-						Cetak Hasil
-					</Button>
-				</div>
-
-				{/* Disclaimer */}
+			{/* Actions */}
+			<div className="flex justify-center gap-4">
+				<Button onClick={handleBackToDashboard} variant="outline" className="px-8 bg-transparent">
+					{userRole === "user" ? "Kembali ke Dashboard" : "Kembali ke Home"}
+				</Button>
+				<Button onClick={() => window.print()} className="px-8">
+					Cetak Hasil
+				</Button>
+			</div>				{/* Disclaimer */}
 				<Card className="mt-8 border-muted">
 					<CardContent className="pt-6">
 						<p className="text-xs text-muted-foreground text-center">
