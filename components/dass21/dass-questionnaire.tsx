@@ -10,42 +10,29 @@ import { ResultsCard } from "@/components/dass21/results-card"
 import axios from "axios"
 import { jwtDecode } from "jwt-decode"
 
-// Pastikan jumlah pertanyaan sesuai dengan DASS-21 (21 soal) atau DASS-42 (42 soal)
-// Di array ini jumlahnya 21, jadi kita set type nanti ke "21"
+// Daftar Pertanyaan DASS-21
 const dassQuestions = [
     { id: 1, text: "Saya merasa sulit untuk menenangkan diri.", category: "stress" },
     { id: 2, text: "Saya merasa mulut saya kering.", category: "anxiety" },
     { id: 3, text: "Saya tidak dapat merasakan perasaan positif sama sekali.", category: "depression" },
-    {
-        id: 4,
-        text: "Saya mengalami kesulitan bernapas (misalnya, terengah-engah, sesak napas) tanpa ada aktivitas fisik.",
-        category: "anxiety"
-    },
+    { id: 4, text: "Saya mengalami kesulitan bernapas (misalnya, terengah-engah, sesak napas) tanpa ada aktivitas fisik.", category: "anxiety" },
     { id: 5, text: "Saya merasa sulit untuk berinisiatif melakukan sesuatu.", category: "depression" },
     { id: 6, text: "Saya cenderung bereaksi berlebihan terhadap situasi.", category: "stress" },
-    { id: 7, text: "Saya merasa gemetar (misalnya, di tangan).", category: "anxiety" },
-    { id: 8, text: "Saya merasa menggunakan banyak energi saraf.", category: "stress" },
-    { id: 9, text: "Saya khawatir dengan situasi yang mungkin membuat saya panik dan mempermalukan diri sendiri.", category: "anxiety" },
-    { id: 10, text: "Saya merasa tidak ada hal yang dapat saya harapkan di masa depan.", category: "depression" },
-    { id: 11, text: "Saya merasa gelisah.", category: "stress" },
-    { id: 12, text: "Saya merasa sulit untuk bersantai.", category: "stress" },
+    { id: 7, text: "Saya mengalami gemetar (misalnya, pada tangan).", category: "anxiety" },
+    { id: 8, text: "Saya merasa menggunakan banyak energi untuk gelisah.", category: "stress" },
+    { id: 9, text: "Saya khawatir akan situasi di mana saya mungkin menjadi panik dan mempermalukan diri sendiri.", category: "anxiety" },
+    { id: 10, text: "Saya merasa tidak ada hal yang dapat saya nantikan.", category: "depression" },
+    { id: 11, text: "Saya mendapati diri saya menjadi gelisah.", category: "stress" },
+    { id: 12, text: "Saya merasa sulit untuk rileks.", category: "stress" },
     { id: 13, text: "Saya merasa sedih dan tertekan.", category: "depression" },
-    {
-        id: 14,
-        text: "Saya tidak sabar (misalnya, mudah tersinggung, mudah marah).",
-        category: "stress"
-    },
+    { id: 14, text: "Saya tidak toleran terhadap apa pun yang menghalangi saya menyelesaikan apa yang sedang saya lakukan.", category: "stress" },
     { id: 15, text: "Saya merasa hampir panik.", category: "anxiety" },
-    { id: 16, text: "Saya merasa tidak bersemangat untuk melakukan apa pun.", category: "depression" },
-    { id: 17, text: "Saya merasa diri saya tidak berharga.", category: "depression" },
-    { id: 18, text: "Saya merasa sangat peka (mudah tersinggung).", category: "stress" },
-    {
-        id: 19,
-        text: "Saya merasakan detak jantung saya (misalnya, berdebar-debar) tanpa ada alasan fisik.",
-        category: "anxiety"
-    },
+    { id: 16, text: "Saya tidak dapat antusias terhadap apa pun.", category: "depression" },
+    { id: 17, text: "Saya merasa saya tidak berharga sebagai seseorang.", category: "depression" },
+    { id: 18, text: "Saya merasa bahwa saya mudah tersinggung.", category: "stress" },
+    { id: 19, text: "Saya menyadari detak jantung saya walau tanpa aktivitas fisik (misalnya, detak jantung meningkat, jantung berdebar).", category: "anxiety" },
     { id: 20, text: "Saya merasa takut tanpa alasan yang jelas.", category: "anxiety" },
-    { id: 21, text: "Saya merasa hidup tidak berarti.", category: "depression" }
+    { id: 21, text: "Saya merasa bahwa hidup tidak berarti.", category: "depression" },
 ]
 
 interface Result {
@@ -54,6 +41,7 @@ interface Result {
     stress: number
 }
 
+// PERUBAHAN PENTING: Gunakan 'export function' (Named Export)
 export function DassQuestionnaire() {
     const [currentQuestion, setCurrentQuestion] = useState(0)
     const [responses, setResponses] = useState<Record<number, number>>({})
@@ -63,30 +51,26 @@ export function DassQuestionnaire() {
     const [userToken, setUserToken] = useState<string | null>(null)
     const [userRole, setUserRole] = useState<"user" | "guest">("guest")
 
-    // Cek apakah user login saat komponen di-load
     useEffect(() => {
-        const token = sessionStorage.getItem("authToken")
-        setUserToken(token)
-        
-        // Tentukan role berdasarkan token
-        if (token) {
-            try {
-                const decoded: any = jwtDecode(token)
-                setUserRole(decoded.role === "user" ? "user" : "guest")
-                console.log("✅ User authenticated with role:", decoded.role)
-            } catch (err) {
-                console.warn("⚠️ Failed to decode token:", err)
-                setUserRole("guest")
+        if (typeof window !== "undefined") {
+            const token = sessionStorage.getItem("authToken")
+            setUserToken(token)
+            
+            if (token) {
+                try {
+                    const decoded: any = jwtDecode(token)
+                    setUserRole(decoded.role === "user" ? "user" : "guest")
+                } catch (err) {
+                    console.error("Token error:", err)
+                    setUserRole("guest")
+                }
             }
-        } else {
-            setUserRole("guest")
-            console.log("📝 Running as guest (no token)")
         }
     }, [])
 
     const handleResponse = (questionId: number, value: number | string) => {
-        const roundedValue = Math.round(Number(value) * 10) / 10
-        setResponses((prev) => ({ ...prev, [questionId]: roundedValue }))
+        const val = Number(value)
+        setResponses((prev) => ({ ...prev, [questionId]: val }))
     }
 
     const handleNext = async () => {
@@ -106,74 +90,52 @@ export function DassQuestionnaire() {
     const submitResult = async () => {
         setIsSubmitting(true)
         try {
-            // 1. Siapkan Data
             const scores = dassQuestions.map(q => Number(responses[q.id] ?? 0))
+            
             const payload = { 
-                scores,
-                type: "21" // PENTING: Backend butuh field ini
+                scores: scores,
+                type: "21"
             }
             
-            console.log("📋 DASS-21 Submission Started")
-            console.log("📤 Payload:", JSON.stringify(payload, null, 2))
-            console.log("🔐 Token present:", !!userToken)
-            if (userToken) {
-                console.log("🔐 Token preview:", `${userToken.substring(0, 20)}...`)
-            }
-
+            const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000"
             let endpoint = ""
-            let config: any = {
-                headers: {
-                    "Content-Type": "application/json"
-                }
+            
+            const config: any = {
+                headers: { "Content-Type": "application/json" },
+                timeout: 30000 
             }
 
-            // 2. Tentukan Logic: User vs Guest
             if (userToken) {
-                // CASE A: User Login (Simpan History)
-                endpoint = `${process.env.NEXT_PUBLIC_API}/qdss`
+                endpoint = `${baseUrl}/qdss`
                 config.headers["Authorization"] = `Bearer ${userToken}`
-                
-                console.log("👤 Submitting as: Authenticated User")
-                console.log("✅ Authorization header set:", `Bearer ${userToken.substring(0, 20)}...`)
             } else {
-                // CASE B: Guest (Hanya Hitung / Public)
-                endpoint = `${process.env.NEXT_PUBLIC_API}/qdss/public` 
-                console.log("👥 Submitting as: Guest")
+                endpoint = `${baseUrl}/qdss/public`
             }
 
-            console.log("🌐 Endpoint:", endpoint)
-            console.log("📋 Config headers:", config.headers)
+            console.log(`📡 Sending to: ${endpoint}`, payload)
 
-            // 3. Kirim Request
             const res = await axios.post(endpoint, payload, config)
-
-            // 4. Handle Response
-            console.log("✅ API Response Success:", res.data)
-            setApiResult(res.data)
+            console.log("✅ Response:", res.data)
+            
+            const resultData = res.data.final_scores || res.data
+            setApiResult(resultData)
             setIsCompleted(true)
 
         } catch (error: any) {
-            console.error("❌ Failed to submit:", error)
-            console.error("❌ Response status:", error?.response?.status)
-            console.error("❌ Response data:", error?.response?.data)
-            console.error("❌ Error message:", error?.message)
+            console.error("❌ Submit Error:", error)
+            let msg = "Terjadi kesalahan koneksi."
             
-            // Optional: Tampilkan alert jika error spesifik
-            if (error.response?.status === 401) {
-                alert("Sesi Anda habis. Silakan login ulang.")
-            } else if (error.response?.status === 404 && !userToken) {
-                alert("Endpoint Guest belum tersedia. Silakan Login untuk melakukan tes.")
-            } else {
-                alert("Terjadi kesalahan saat memproses data.")
+            if (error.response) {
+                msg = `Server Error (${error.response.status}): ${error.response.data?.detail || "Gagal memproses data"}`
+            } else if (error.request) {
+                msg = "Gagal terhubung ke server. Pastikan backend (Port 8000) menyala."
             }
+            
+            alert(msg)
         } finally {
             setIsSubmitting(false)
         }
     }
-
-    const progress = ((currentQuestion + 1) / dassQuestions.length) * 100
-    const currentQuestionData = dassQuestions[currentQuestion]
-    const currentResponse = responses[currentQuestionData?.id]
 
     if (isCompleted && apiResult) {
         return (
@@ -184,44 +146,41 @@ export function DassQuestionnaire() {
                     setCurrentQuestion(0)
                     setResponses({})
                     setIsCompleted(false)
-                    // Opsional: Redirect atau reset state saja
-                    // window.location.href = "/" 
+                    setApiResult(undefined)
                 }}
             />
         )
     }
 
+    const progress = ((currentQuestion + 1) / dassQuestions.length) * 100
+    const currentQuestionData = dassQuestions[currentQuestion]
+    const currentResponse = responses[currentQuestionData?.id]
+
     return (
-        <div className="min-h-screen bg-linear-to-br from-background via-accent/5 to-background p-4">
-            <div className="max-w-4xl mx-auto">
-                {/* Header */}
-                <div className="text-center mb-8 pt-8">
-                    <h1 className="text-4xl font-bold text-foreground mb-4 text-balance">
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+            <div className="w-full max-w-3xl space-y-6">
+                
+                <div className="text-center mb-8 pt-4">
+                    <h1 className="text-3xl font-bold text-foreground mb-2">
                         Kuisioner DASS-21
                     </h1>
-                    <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-                        Skala Depresi, Kecemasan, dan Stres - {dassQuestions.length} Item
+                    <p className="text-muted-foreground">
+                        Jawablah berdasarkan kondisi Anda selama seminggu terakhir.
                     </p>
-                    
-                    {/* Indikator Status Login (Optional) */}
-                    <div className="mt-2">
+                    <div className="mt-4 flex justify-center gap-2">
                          {userToken ? (
-                            <Badge variant="default" className="bg-green-600">Mode: Pengguna (Hasil Disimpan)</Badge>
+                            <Badge className="bg-green-600">Mode: Pengguna</Badge>
                          ) : (
-                            <Badge variant="outline">Mode: Tamu (Hasil Tidak Disimpan)</Badge>
+                            <Badge variant="outline">Mode: Tamu</Badge>
                          )}
-                    </div>
-
-                    <div className="flex items-center justify-center gap-4 mt-6">
-                        <Badge variant="secondary" className="text-sm">
-                            Pertanyaan {currentQuestion + 1} dari {dassQuestions.length}
-                        </Badge>
+                         <Badge variant="secondary">
+                            Soal {currentQuestion + 1} / {dassQuestions.length}
+                         </Badge>
                     </div>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="mb-8">
-                    <div className="flex justify-between text-sm text-muted-foreground mb-2">
+                <div className="mb-6 space-y-2">
+                    <div className="flex justify-between text-xs text-muted-foreground">
                         <span>Progress</span>
                         <span>{Math.round(progress)}%</span>
                     </div>
@@ -237,57 +196,44 @@ export function DassQuestionnaire() {
                     onResponse={handleResponse}
                 />
 
-                {/* Navigation */}
-                <div className="flex justify-between items-center mt-8">
+                <div className="flex justify-between items-center pt-4">
                     <Button
                         variant="outline"
                         onClick={handlePrevious}
                         disabled={currentQuestion === 0 || isSubmitting}
-                        className="px-6 bg-transparent"
+                        className="w-32"
                     >
                         Sebelumnya
                     </Button>
 
-                    <div className="text-sm text-muted-foreground">
-                        {Object.keys(responses).length} dari {dassQuestions.length} pertanyaan dijawab
-                    </div>
-
                     <Button 
                         onClick={handleNext} 
                         disabled={currentResponse === undefined || isSubmitting} 
-                        className="px-6"
+                        className="w-32"
                     >
                         {isSubmitting ? "Memproses..." : (currentQuestion === dassQuestions.length - 1 ? "Selesai" : "Selanjutnya")}
                     </Button>
                 </div>
 
-                {/* Instructions */}
-                <Card className="mt-8 border-accent/20">
-                    <CardHeader>
-                        <CardTitle className="text-lg">Petunjuk Pengisian</CardTitle>
+                <Card className="mt-8 border-dashed bg-muted/20 shadow-none">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground text-center">
+                            Panduan Skala Penilaian (0 - 3)
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-muted-foreground text-pretty">
-                            Silakan baca setiap pernyataan dan gunakan slider untuk memilih nilai antara 0.0 hingga 3.0 yang
-                            menunjukkan seberapa sering Anda mengalami kondisi tersebut <strong>selama seminggu terakhir</strong>.
-                            Anda dapat memilih nilai desimal seperti 1.5, 2.3, dll. untuk tingkat yang lebih spesifik.
-                        </p>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                            <div className="text-center p-3 bg-muted/50 rounded-lg">
-                                <div className="font-semibold text-lg">0.0</div>
-                                <div className="text-sm text-muted-foreground">Tidak pernah</div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center text-xs">
+                            <div className="p-2 rounded bg-background border">
+                                <strong className="block text-lg">0</strong> Tidak pernah
                             </div>
-                            <div className="text-center p-3 bg-muted/50 rounded-lg">
-                                <div className="font-semibold text-lg">1.0</div>
-                                <div className="text-sm text-muted-foreground">Kadang-kadang</div>
+                            <div className="p-2 rounded bg-background border">
+                                <strong className="block text-lg">1</strong> Kadang-kadang
                             </div>
-                            <div className="text-center p-3 bg-muted/50 rounded-lg">
-                                <div className="font-semibold text-lg">2.0</div>
-                                <div className="text-sm text-muted-foreground">Sering</div>
+                            <div className="p-2 rounded bg-background border">
+                                <strong className="block text-lg">2</strong> Sering
                             </div>
-                            <div className="text-center p-3 bg-muted/50 rounded-lg">
-                                <div className="font-semibold text-lg">3.0</div>
-                                <div className="text-sm text-muted-foreground">Hampir selalu</div>
+                            <div className="p-2 rounded bg-background border">
+                                <strong className="block text-lg">3</strong> Hampir selalu
                             </div>
                         </div>
                     </CardContent>

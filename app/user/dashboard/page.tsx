@@ -227,7 +227,7 @@ export default function UserDashboardPage() {
                     </h2>
                     <div className="grid gap-6 md:grid-cols-2">
                         {/* Card DASS-21 */}
-                        <Card className="hover:shadow-lg transition-all border-l-4 border-l-blue-500 bg-gradient-to-br from-background to-blue-50/20">
+                        <Card className="hover:shadow-lg transition-all border-l-4 border-l-blue-500 bg-linear-to-br from-background to-blue-50/20">
                             <CardHeader>
                                 <div className="flex justify-between items-start">
                                     <div>
@@ -250,7 +250,7 @@ export default function UserDashboardPage() {
                         </Card>
 
                         {/* Card DASS-42 */}
-                        <Card className="hover:shadow-lg transition-all border-l-4 border-l-purple-500 bg-gradient-to-br from-background to-purple-50/20">
+                        <Card className="hover:shadow-lg transition-all border-l-4 border-l-purple-500 bg-linear-to-br from-background to-purple-50/20">
                             <CardHeader>
                                 <div className="flex justify-between items-start">
                                     <div>
