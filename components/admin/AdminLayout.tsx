@@ -54,11 +54,15 @@ export default function AdminLayout({
             Users
           </Link>
 
-          <Link href="/admin/experts" className={getLinkClass("/admin/experts")}>
+          <Link href="/admin/experts" className={getLinkClass("/admin/experts")}> 
             Experts
           </Link>
 
-          <Link href="/admin/rankings" className={getLinkClass("/admin/rankings")}>
+          <Link href="/admin/groups" className={getLinkClass("/admin/groups")}> 
+            Groups
+          </Link>
+
+          <Link href="/admin/rankings" className={getLinkClass("/admin/rankings")}> 
             Rankings & Consensus
           </Link>
         </nav>

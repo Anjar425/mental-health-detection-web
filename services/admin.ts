@@ -1,3 +1,301 @@
+// -------------------- EXPERT GROUPS --------------------
+
+export interface ExpertGroup {
+  id: number
+  name: string
+  description: string
+  created_at: string
+  member_count?: number
+}
+
+export interface ExpertGroupDetail extends ExpertGroup {
+  members: User[]
+}
+
+export interface ExpertCapability {
+  education_level?: string | null
+  publication_count: number
+  patient_count: number
+  flight_hours: number
+  weight_JT: number
+  weight_Pat: number
+  weight_Pend: number
+  weight_Pub: number
+}
+
+export interface ExpertPreference {
+  question_id: number
+  depression: number
+  anxiety: number
+  stress: number
+}
+
+export interface GroupExpertRanking {
+  user_id: number
+  username: string
+  email: string
+  influence_score: number
+  influence_percent: number
+  capability: ExpertCapability
+  preferences: ExpertPreference[]
+  rank: number
+}
+
+export interface GroupConsensusRow {
+  question_id: number
+  depression: number
+  anxiety: number
+  stress: number
+}
+
+export interface WeightInfo {
+  signature?: string
+  created_at?: string
+  meta?: Record<string, any>
+  weights_by_user?: Array<{ user_id: number; weight: number }>
+}
+
+export interface GroupRankingDetail {
+  group_id: number
+  group_name: string
+  description?: string | null
+  rankings: GroupExpertRanking[]
+  consensus_matrix: GroupConsensusRow[]
+  weights_info?: WeightInfo
+}
+
+/**
+ * Get all expert groups.
+ * GET /groups
+ */
+export async function getExpertGroups(): Promise<ExpertGroup[]> {
+  const res = await fetch(
+    `${API_BASE}/admin/groups`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+    }
+  )
+  return handleJson<ExpertGroup[]>(res)
+}
+
+/**
+ * Get detail of a specific expert group.
+ * GET /groups/{id}
+ */
+export async function getExpertGroupDetail(id: number): Promise<ExpertGroupDetail> {
+  const res = await fetch(
+    `${API_BASE}/admin/groups/${id}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+    }
+  )
+  return handleJson<ExpertGroupDetail>(res)
+}
+
+export async function getGroupRankingDetail(groupId: number): Promise<GroupRankingDetail> {
+  try {
+    const res = await fetch(`${API_BASE}/admin/groups/${groupId}/rankings`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+    })
+    return handleJson<GroupRankingDetail>(res)
+  } catch (err: any) {
+    // Network or CORS failures produce TypeError in fetch APIs
+    const msg = err?.message || String(err)
+    throw new Error(`Network error: ${msg}`)
+  }
+}
+
+/**
+ * Invalidate cached GA weights for a group. The next call to GET /groups/{id}/rankings
+ * will re-run the GA and save the new weights.
+ * POST /groups/{id}/invalidate-cache
+ */
+export async function invalidateGroupWeights(groupId: number): Promise<{ deleted: number }> {
+  const url = `${API_BASE}/admin/groups/${groupId}/invalidate-cache`
+  const headers = { "Content-Type": "application/json", ...getAuthHeaders() }
+  // Don't print auth token, but indicate whether one exists
+  // Quick client-side guard for missing auth token to avoid ambiguous network errors
+  if (!headers.Authorization) {
+    throw new Error("Not authenticated: please log in as admin before invalidating group weights.")
+  }
+
+  try {
+    console.debug("invalidateGroupWeights ->", { url, hasAuth: !!headers.Authorization })
+    const res = await fetch(url, {
+      method: "POST",
+      headers,
+      mode: "cors",
+    })
+    return handleJson<{ deleted: number }>(res)
+  } catch (err: any) {
+    const msg = err?.message || String(err)
+    if (msg === "Failed to fetch" || err instanceof TypeError) {
+      throw new Error(
+        `Network error: ${msg} — check backend reachable at ${API_BASE}, ensure CORS allows origin, and that you're logged in (Authorization header present). Open DevTools Network tab to inspect request.`
+      )
+    }
+    throw new Error(`Network error: ${msg}`)
+  }
+} 
+
+/**
+ * Recompute & persist GA weights for a group (admin-triggered)
+ * POST /groups/{id}/recompute-weights
+ */
+export async function recomputeGroupWeights(groupId: number): Promise<{ weights: number[]; signature: string }> {
+  const url = `${API_BASE}/admin/groups/${groupId}/recompute-weights`
+  const headers = { "Content-Type": "application/json", ...getAuthHeaders() }
+  // Quick client-side guard for missing auth token to avoid ambiguous network errors
+  if (!headers.Authorization) {
+    throw new Error("Not authenticated: please log in as admin before recomputing weights.")
+  }
+
+  try {
+    console.debug("recomputeGroupWeights ->", { url, hasAuth: !!headers.Authorization })
+    const res = await fetch(url, {
+      method: "POST",
+      headers,
+      mode: "cors",
+    })
+    return handleJson<{ weights: number[]; signature: string }>(res)
+  } catch (err: any) {
+    const msg = err?.message || String(err)
+    if (msg === "Failed to fetch" || err instanceof TypeError) {
+      throw new Error(
+        `Network error: ${msg} — check backend reachable at ${API_BASE}, ensure CORS allows origin, and that you're logged in (Authorization header present). Open DevTools Network tab to inspect request.`
+      )
+    }
+    throw new Error(`Network error: ${msg}`)
+  }
+}
+
+export async function getGroupSignatureInfo(groupId: number): Promise<any> {
+  try {
+    const res = await fetch(`${API_BASE}/admin/groups/${groupId}/signature-info`, {
+      headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+    })
+    return handleJson<any>(res)
+  } catch (err: any) {
+    const msg = err?.message || String(err)
+    throw new Error(`Network error: ${msg}`)
+  }
+}
+
+/**
+ * Create a new expert group.
+ * POST /groups
+ */
+export async function createExpertGroup(data: { name: string; description: string; expert_ids: number[] }): Promise<ExpertGroup> {
+  const res = await fetch(
+    `${API_BASE}/admin/groups`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify(data),
+    }
+  )
+  return handleJson<ExpertGroup>(res)
+}
+
+/**
+ * Update an expert group.
+ * PUT /groups/{id}
+ */
+export async function updateExpertGroup(
+  id: number,
+  data: { name?: string; description?: string }
+): Promise<ExpertGroup> {
+  const res = await fetch(
+    `${API_BASE}/admin/groups/${id}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify(data),
+    }
+  )
+  return handleJson<ExpertGroup>(res)
+}
+
+/**
+ * Delete an expert group.
+ * DELETE /groups/{id}
+ */
+export async function deleteExpertGroup(id: number): Promise<{ success: boolean }> {
+  const res = await fetch(
+    `${API_BASE}/admin/groups/${id}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+    }
+  )
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`API ${res.status}: ${text}`)
+  }
+  return { success: true }
+}
+
+/**
+ * Add a member to an expert group.
+ * POST /groups/{groupId}/members/{expertId}
+ */
+export async function addMemberToGroup(groupId: number, expertId: string): Promise<{ success: boolean }> {
+  const res = await fetch(
+    `${API_BASE}/admin/groups/${groupId}/members/${expertId}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+    }
+  )
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`API ${res.status}: ${text}`)
+  }
+  return { success: true }
+}
+
+/**
+ * Remove a member from an expert group.
+ * DELETE /groups/{groupId}/members/{expertId}
+ */
+export async function removeMemberFromGroup(groupId: number, expertId: string): Promise<{ success: boolean }> {
+  const res = await fetch(
+    `${API_BASE}/admin/groups/${groupId}/members/${expertId}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+      },
+    }
+  )
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`API ${res.status}: ${text}`)
+  }
+  return { success: true }
+}
 // services/admin.ts
 
 export interface User {
@@ -33,14 +331,14 @@ export interface Paginated<T> {
  * IMPORTANT:
  * This MUST point to FastAPI backend, NOT Next.js
  */
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000"
+export const API_BASE =
+  process.env.NEXT_PUBLIC_API || "http://localhost:8000"
 
 /* -------------------------------------------------- */
 /* Helpers                                            */
 /* -------------------------------------------------- */
 
-function getAuthHeaders(): Record<string, string> {
+export function getAuthHeaders(): Record<string, string> {
   if (typeof window === "undefined") return {}
   const token = sessionStorage.getItem("authToken")
   return token ? { Authorization: `Bearer ${token}` } : {}
@@ -96,7 +394,7 @@ async function parsePaginatedResponse<T>(
 
 export async function getUsers({
   page = 1,
-  perPage = 50,
+  perPage = 100, // Batas backend
   q,
   sort,
   order,
@@ -137,7 +435,7 @@ export async function getUsers({
 
 export async function getExperts({
   page = 1,
-  perPage = 50,
+  perPage = 100, // Batas backend
   q,
   sort,
   order,

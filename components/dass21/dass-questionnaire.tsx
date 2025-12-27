@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -9,6 +10,7 @@ import { QuestionCard } from "@/components/dass21/question-card"
 import { ResultsCard } from "@/components/dass21/results-card"
 import axios from "axios"
 import { jwtDecode } from "jwt-decode"
+import { useSearchParams } from "next/navigation"
 
 // Daftar Pertanyaan DASS-21
 const dassQuestions = [
@@ -43,6 +45,7 @@ interface Result {
 
 // PERUBAHAN PENTING: Gunakan 'export function' (Named Export)
 export function DassQuestionnaire() {
+    const searchParams = useSearchParams()
     const [currentQuestion, setCurrentQuestion] = useState(0)
     const [responses, setResponses] = useState<Record<number, number>>({})
     const [isCompleted, setIsCompleted] = useState(false)
@@ -50,6 +53,7 @@ export function DassQuestionnaire() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [userToken, setUserToken] = useState<string | null>(null)
     const [userRole, setUserRole] = useState<"user" | "guest">("guest")
+    const [groupId, setGroupId] = useState<number | null>(null)
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -65,8 +69,14 @@ export function DassQuestionnaire() {
                     setUserRole("guest")
                 }
             }
+
+            // Baca groupId dari URL
+            const gid = searchParams.get('groupId')
+            if (gid) {
+                setGroupId(parseInt(gid, 10))
+            }
         }
-    }, [])
+    }, [searchParams])
 
     const handleResponse = (questionId: number, value: number | string) => {
         const val = Number(value)
@@ -94,7 +104,8 @@ export function DassQuestionnaire() {
             
             const payload = { 
                 scores: scores,
-                type: "21"
+                type: "21",
+                group_id: groupId
             }
             
             const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000"
@@ -148,6 +159,7 @@ export function DassQuestionnaire() {
                     setIsCompleted(false)
                     setApiResult(undefined)
                 }}
+                groupId={groupId}
             />
         )
     }

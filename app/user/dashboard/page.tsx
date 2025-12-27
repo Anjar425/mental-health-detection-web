@@ -27,6 +27,15 @@ interface HistoryItem {
     anxiety_score: number
     stress_score: number
     highest_severity: string
+    group_id?: number | null
+    group_name?: string | null
+}
+
+interface ExpertGroup {
+    id: number
+    name: string
+    description: string
+    member_count?: number
 }
 
 // --- Helpers ---
@@ -77,6 +86,13 @@ export default function UserDashboardPage() {
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 5
 
+    // State untuk Grup
+    const [groups, setGroups] = useState<ExpertGroup[]>([])
+
+    // State untuk Modal Pilih Grup
+    const [showGroupModal, setShowGroupModal] = useState(false)
+    const [loadingGroups, setLoadingGroups] = useState(false)
+
     // --- Effects ---
     useEffect(() => {
         const token = sessionStorage.getItem("authToken")
@@ -114,6 +130,12 @@ export default function UserDashboardPage() {
                 console.log("History Data Received:", response.data)
                 setHistoryRecords(response.data)
 
+                // Fetch Groups
+                const groupsResponse = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/groups`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+                setGroups(groupsResponse.data || [])
+
             } catch (err) {
                 console.error("Error loading dashboard:", err)
                 if (axios.isAxiosError(err) && err.response?.status === 401) {
@@ -133,6 +155,28 @@ export default function UserDashboardPage() {
     const handleLogout = () => {
         sessionStorage.removeItem("authToken")
         router.push("/")
+    }
+
+    const handleStartDass21 = async () => {
+        setLoadingGroups(true)
+        try {
+            const token = sessionStorage.getItem("authToken")
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/groups`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            setGroups(response.data || [])
+            setShowGroupModal(true)
+        } catch (err) {
+            console.error("Failed to load groups", err)
+            alert("Gagal memuat daftar grup. Silakan coba lagi.")
+        } finally {
+            setLoadingGroups(false)
+        }
+    }
+
+    const handleSelectGroup = (groupId: number) => {
+        setShowGroupModal(false)
+        router.push(`/detection/dass21?groupId=${groupId}`)
     }
 
     const handleDeleteHistory = async (historyId: number) => {
@@ -243,8 +287,8 @@ export default function UserDashboardPage() {
                                 </p>
                             </CardContent>
                             <CardFooter>
-                                <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => router.push('/detection/dass21')}>
-                                    Mulai DASS-21 <ArrowRight className="ml-2 h-4 w-4" />
+                                <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={handleStartDass21} disabled={loadingGroups}>
+                                    {loadingGroups ? "Memuat Grup..." : "Mulai DASS-21"} <ArrowRight className="ml-2 h-4 w-4" />
                                 </Button>
                             </CardFooter>
                         </Card>
@@ -266,7 +310,7 @@ export default function UserDashboardPage() {
                                 </p>
                             </CardContent>
                             <CardFooter>
-                                <Button className="w-full bg-purple-600 hover:bg-purple-700" onClick={() => router.push('/detection/dass42')}>
+                                <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => router.push("/detection/dass42")}>
                                     Mulai DASS-42 <ArrowRight className="ml-2 h-4 w-4" />
                                 </Button>
                             </CardFooter>
@@ -312,6 +356,7 @@ export default function UserDashboardPage() {
                                             <tr>
                                                 <th className="px-6 py-3">Tanggal</th>
                                                 <th className="px-6 py-3">Tipe</th>
+                                                <th className="px-6 py-3">Grup Pakar</th>
                                                 <th className="px-6 py-3">Dominan</th>
                                                 <th className="px-6 py-3 text-center">Skor (D / A / S)</th>
                                                 {/* <th className="px-6 py-3">Status / Severity</th> */}
@@ -336,6 +381,11 @@ export default function UserDashboardPage() {
                                                             <Badge variant="outline" className="font-mono">
                                                                 DASS-{record.type}
                                                             </Badge>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <span className="text-sm text-foreground">
+                                                                {record.group_name ? record.group_name : "Global"}
+                                                            </span>
                                                         </td>
                                                         <td className="px-6 py-4">
                                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${dominant.color}-100 text-${dominant.color}-800`}>
@@ -445,6 +495,63 @@ export default function UserDashboardPage() {
                     </div>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Modal Pilih Grup */}
+            {showGroupModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+                    <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden animate-in fade-in zoom-in-95">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
+                            <div>
+                                <h2 className="text-xl font-bold flex items-center gap-2">
+                                    <Activity className="w-5 h-5 text-primary" /> Pilih Grup Pakar
+                                </h2>
+                                <p className="text-xs text-muted-foreground">
+                                    Pilih grup pakar yang akan digunakan untuk interpretasi hasil DASS-21 Anda.
+                                </p>
+                            </div>
+                            <button
+                                className="text-muted-foreground hover:text-destructive"
+                                onClick={() => setShowGroupModal(false)}
+                                aria-label="Tutup"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(80vh-4rem)]">
+                            {groups.length === 0 ? (
+                                <div className="text-center py-12 rounded-lg border border-dashed border-border/50 bg-muted/20">
+                                    <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                                    <p className="text-muted-foreground">Belum ada grup pakar tersedia.</p>
+                                    <p className="text-xs text-muted-foreground mt-2">Silakan hubungi admin untuk membuat grup.</p>
+                                </div>
+                            ) : (
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    {groups.map((group) => (
+                                        <button
+                                            key={group.id}
+                                            className="text-left border border-border bg-card hover:bg-muted/40 rounded-xl p-4 transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                                            onClick={() => handleSelectGroup(group.id)}
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div>
+                                                    <h3 className="text-lg font-semibold text-foreground">{group.name}</h3>
+                                                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                                        {group.description || "Tidak ada deskripsi"}
+                                                    </p>
+                                                </div>
+                                                <Badge variant="secondary" className="bg-primary/10 text-primary">
+                                                    {group.member_count ?? 0} Pakar
+                                                </Badge>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     )
 }
