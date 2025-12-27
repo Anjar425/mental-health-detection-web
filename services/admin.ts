@@ -69,16 +69,29 @@ export interface GroupRankingDetail {
  * GET /groups
  */
 export async function getExpertGroups(): Promise<ExpertGroup[]> {
-  const res = await fetch(
-    `${API_BASE}/admin/groups`,
-    {
+  try {
+    // Helpful runtime debug to confirm which API_BASE is used in the browser
+    try {
+      // eslint-disable-next-line no-console
+      console.debug("getExpertGroups -> API_BASE =", API_BASE)
+    } catch {}
+    const res = await fetch(`${API_BASE}/admin/groups`, {
       headers: {
         "Content-Type": "application/json",
         ...getAuthHeaders(),
       },
+      mode: "cors",
+    })
+    return handleJson<ExpertGroup[]>(res)
+  } catch (err: any) {
+    const msg = err?.message || String(err)
+    if (msg === "Failed to fetch" || err instanceof TypeError) {
+      throw new Error(
+        `Network error: ${msg} — check backend reachable at ${API_BASE}, ensure CORS allows origin, and that you're logged in (Authorization header if required). Open DevTools Network tab to inspect request.`
+      )
     }
-  )
-  return handleJson<ExpertGroup[]>(res)
+    throw new Error(`Network error: ${msg}`)
+  }
 }
 
 /**

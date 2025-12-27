@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { AdminNav } from "../../../components/admin/AdminNav"
-import { getExpertGroups, getExpertGroupDetail, getExperts, removeMemberFromGroup, createExpertGroup, updateExpertGroup, addMemberToGroup, API_BASE, getAuthHeaders } from "../../../services/admin"
+import { getExpertGroups, getExpertGroupDetail, getExperts, removeMemberFromGroup, createExpertGroup, updateExpertGroup, addMemberToGroup, API_BASE, getAuthHeaders, deleteExpertGroup } from "../../../services/admin"
 import type { ExpertGroup, ExpertGroupDetail, User } from "../../../services/admin"
 import { Plus, Users, Eye, UserPlus, UserMinus, Loader2 } from "lucide-react"
 import GroupModal, { GroupDetailModal } from "../../../components/admin/GroupModal"
@@ -10,17 +10,23 @@ import GroupModal, { GroupDetailModal } from "../../../components/admin/GroupMod
 export default function GroupsPage() {
   const [groups, setGroups] = useState<ExpertGroup[]>([])
   const [loading, setLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedGroup, setSelectedGroup] = useState<ExpertGroupDetail | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
   const [experts, setExperts] = useState<User[]>([])
   const [addLoading, setAddLoading] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   // Fetch groups
   useEffect(() => {
     setLoading(true)
     getExpertGroups()
       .then(setGroups)
+      .catch((err) => {
+        console.error("getExpertGroups error:", err)
+        setErrorMessage(err?.message || String(err))
+      })
       .finally(() => setLoading(false))
   }, [])
 
@@ -98,6 +104,22 @@ export default function GroupsPage() {
     }
   }
 
+  // Delete group
+  const handleDeleteGroup = async (groupId: number) => {
+    setDeleteLoading(true)
+    try {
+      await deleteExpertGroup(groupId)
+      // remove from list and close modal
+      setGroups((prev) => prev.filter(g => g.id !== groupId))
+      setSelectedGroup(null)
+    } catch (err) {
+      console.error("delete group failed", err)
+      alert((err as any)?.message || "Failed to delete group")
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       <AdminNav />
@@ -120,6 +142,12 @@ export default function GroupsPage() {
           {loading ? (
             <div className="p-8 text-center text-muted-foreground animate-pulse">
               <Loader2 className="inline mr-2 animate-spin" /> Loading groups...
+            </div>
+          ) : errorMessage ? (
+            <div className="p-8 text-center text-destructive">
+              <div className="font-semibold">Network error</div>
+              <div className="text-sm text-muted-foreground">{errorMessage}</div>
+              <div className="text-sm text-muted-foreground mt-2">Check backend, CORS, and auth token. See DevTools Network.</div>
             </div>
           ) : groups.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground italic">
@@ -158,7 +186,8 @@ export default function GroupsPage() {
           onUpdate={handleSaveEdit}
           onAddMember={handleAddMember}
           onRemoveMember={handleRemoveMember}
-          loading={addLoading}
+          loading={addLoading || deleteLoading}
+          onDelete={handleDeleteGroup}
           allExperts={experts}
         />
 

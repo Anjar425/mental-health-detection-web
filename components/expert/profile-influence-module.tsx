@@ -198,7 +198,7 @@ export function ProfileInfluenceModule() {
 						</div>
 
 						<div className="space-y-2">
-							<label className="text-sm font-medium text-foreground">Jam Terbang (Jam)</label>
+							<label className="text-sm font-medium text-foreground">Pengalaman (Tahun)</label>
 							<Input
 								type="number"
 								placeholder="contoh: 10000"
@@ -301,7 +301,7 @@ export function ProfileInfluenceModule() {
 					{/* Experience Hours Weight */}
 					<div className="space-y-3">
 						<div className="flex items-center justify-between">
-							<label className="text-sm font-medium text-foreground">Jam Terbang</label>
+							<label className="text-sm font-medium text-foreground">Pengalaman</label>
 							<div className="flex items-center gap-2">
 								<input
 									type="number"
