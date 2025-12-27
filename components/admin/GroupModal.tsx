@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react"
 import { Plus, Loader2, Search, X, UserMinus } from "lucide-react"
 import type { User, ExpertGroupDetail } from "../../services/admin"
+import ConfirmDialog from "./ConfirmDialog"
 
 interface GroupModalProps {
   open: boolean
@@ -17,6 +18,7 @@ interface GroupDetailModalProps {
   onUpdate: (data: { name: string; description: string }) => void
   onAddMember: (expertId: string) => void
   onRemoveMember: (expertId: string) => void
+  onDelete?: (groupId: number) => void
   loading?: boolean
   allExperts: User[]
 }
@@ -28,6 +30,7 @@ export function GroupDetailModal({
   onUpdate,
   onAddMember,
   onRemoveMember,
+  onDelete,
   loading,
   allExperts
 }: GroupDetailModalProps) {
@@ -44,6 +47,14 @@ export function GroupDetailModal({
       setDropdownAddOpen(false)
     }
   }, [group, open])
+
+  const [confirmOpen, setConfirmOpen] = useState(false)
+
+  const handleDeleteConfirm = () => {
+    if (!group || !onDelete) return
+    onDelete(group.id)
+    setConfirmOpen(false)
+  }
 
   if (!open || !group) return null
 
@@ -103,6 +114,13 @@ export function GroupDetailModal({
               disabled={loading}
             >
               Cancel
+            </button>
+            <button
+              className="px-4 py-2 rounded bg-destructive text-destructive-foreground font-medium hover:bg-destructive/90 mr-auto"
+              onClick={() => setConfirmOpen(true)}
+              disabled={loading}
+            >
+              Delete Group
             </button>
             <button
               className="px-4 py-2 rounded bg-primary text-primary-foreground font-medium hover:bg-primary/90"
@@ -175,6 +193,13 @@ export function GroupDetailModal({
                 </div>
               )}
             </div>
+            <ConfirmDialog
+              open={confirmOpen}
+              title={`Delete group ${group?.name}`}
+              description="This will permanently delete the group and remove all membership. This action cannot be undone."
+              onCancel={() => setConfirmOpen(false)}
+              onConfirm={handleDeleteConfirm}
+            />
           </div>
         </div>
       </div>
