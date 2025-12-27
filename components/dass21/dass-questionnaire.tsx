@@ -10,7 +10,6 @@ import { QuestionCard } from "@/components/dass21/question-card"
 import { ResultsCard } from "@/components/dass21/results-card"
 import axios from "axios"
 import { jwtDecode } from "jwt-decode"
-import { useSearchParams } from "next/navigation"
 
 // Daftar Pertanyaan DASS-21
 const dassQuestions = [
@@ -40,7 +39,9 @@ const dassQuestions = [
 interface Result {
     depression: number,
     anxiety: number,
-    stress: number
+    stress: number,
+    group_name?: string | null,
+    group_id?: number | null,
 }
 
 // PERUBAHAN PENTING: Gunakan 'export function' (Named Export)
@@ -54,6 +55,7 @@ export function DassQuestionnaire() {
     const [userToken, setUserToken] = useState<string | null>(null)
     const [userRole, setUserRole] = useState<"user" | "guest">("guest")
     const [groupId, setGroupId] = useState<number | null>(null)
+    const [groupName, setGroupName] = useState<string | null>(null)
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -129,6 +131,8 @@ export function DassQuestionnaire() {
             console.log("✅ Response:", res.data)
             
             const resultData = res.data.final_scores || res.data
+            // If backend included resolved group info, capture it for display
+            setGroupName(res.data.group_name ?? null)
             setApiResult(resultData)
             setIsCompleted(true)
 
@@ -158,8 +162,10 @@ export function DassQuestionnaire() {
                     setResponses({})
                     setIsCompleted(false)
                     setApiResult(undefined)
+                    setGroupName(null)
                 }}
                 groupId={groupId}
+                groupName={groupName}
             />
         )
     }
