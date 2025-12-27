@@ -9,8 +9,8 @@ import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
-import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart"
-import { LineChart, Line, CartesianGrid, XAxis, YAxis } from "recharts"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, Legend } from "recharts"
 import { LogOut, TrendingUp, Users, ClipboardList } from "lucide-react"
 import { RulesetModule } from "@/components/expert/ruleset-module"
 import { PreferenceModule } from "@/components/expert/preference-module"
@@ -124,6 +124,40 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     }
   }
   return null
+}
+
+const USER_CHART_COLORS = {
+  depression: "#2563eb",
+  anxiety: "#8b5cf6",
+  stress: "#f97316",
+}
+const USER_CHART_CONFIG: ChartConfig = {
+  depression: { label: "Depresi", color: USER_CHART_COLORS.depression },
+  anxiety: { label: "Ansietas", color: USER_CHART_COLORS.anxiety },
+  stress: { label: "Stres", color: USER_CHART_COLORS.stress },
+}
+
+interface UserChartPoint {
+  timestamp: number
+  label: string
+  tooltipDate: string
+  depression: number
+  anxiety: number
+  stress: number
+}
+
+interface UserChartSeries {
+  key: string
+  userId: number | null
+  name: string
+  email: string
+  data: UserChartPoint[]
+}
+
+interface GroupUserChart {
+  key: string
+  label: string
+  users: UserChartSeries[]
 }
 
 export default function ExpertDashboard() {
@@ -406,6 +440,85 @@ export default function ExpertDashboard() {
     }
   }, [filteredHistoryRecords])
 
+  const perGroupUserCharts = useMemo<GroupUserChart[]>(() => {
+    if (!filteredHistoryRecords.length) return []
+
+    const groupsMap = new Map<string, { label: string; users: Map<string, UserChartSeries> }>()
+
+    filteredHistoryRecords.forEach((record) => {
+      const groupId = record.group_id ?? null
+      const groupKey = groupId !== null ? `group-${groupId}` : "group-unassigned"
+      const groupName = (record.group_name && record.group_name.trim().length > 0)
+        ? record.group_name
+        : groupId !== null
+          ? groupLookup.get(groupId)?.name ?? `Grup ${groupId}`
+          : "Tanpa Grup"
+
+      let groupEntry = groupsMap.get(groupKey)
+      if (!groupEntry) {
+        groupEntry = { label: groupName, users: new Map() }
+        groupsMap.set(groupKey, groupEntry)
+      } else if (groupEntry.label === "Tanpa Grup" && groupName !== "Tanpa Grup") {
+        groupEntry.label = groupName
+      }
+
+      const userId = Number.isFinite(record.user_id) ? record.user_id : null
+      const userKey = userId !== null ? `user-${userId}` : `user-${record.user_email ?? record.user_name ?? "unknown"}`
+      const displayName = record.user_name && record.user_name.trim().length > 0
+        ? record.user_name
+        : record.user_email ?? "Pengguna Tanpa Nama"
+      const userEmail = record.user_email ?? ""
+
+      let userEntry = groupEntry.users.get(userKey)
+      if (!userEntry) {
+        userEntry = {
+          key: userKey,
+          userId,
+          name: displayName,
+          email: userEmail,
+          data: [],
+        }
+        groupEntry.users.set(userKey, userEntry)
+      }
+
+      const createdAt = new Date(record.created_at)
+      const shortLabel = new Intl.DateTimeFormat("id-ID", {
+        day: "2-digit",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(createdAt)
+      const longLabel = new Intl.DateTimeFormat("id-ID", {
+        dateStyle: "long",
+        timeStyle: "short",
+      }).format(createdAt)
+
+      userEntry.data.push({
+        timestamp: createdAt.getTime(),
+        label: shortLabel,
+        tooltipDate: longLabel,
+        depression: normalizeScore(record.depression_score),
+        anxiety: normalizeScore(record.anxiety_score),
+        stress: normalizeScore(record.stress_score),
+      })
+    })
+
+    const result: GroupUserChart[] = []
+    groupsMap.forEach((value, key) => {
+      const users: UserChartSeries[] = []
+      value.users.forEach((user) => {
+        if (!user.data.length) return
+        const sorted = [...user.data].sort((a, b) => a.timestamp - b.timestamp)
+        users.push({ ...user, data: sorted })
+      })
+      if (!users.length) return
+      users.sort((a, b) => a.name.localeCompare(b.name))
+      result.push({ key, label: value.label, users })
+    })
+
+    return result.sort((a, b) => a.label.localeCompare(b.label))
+  }, [filteredHistoryRecords, groupLookup])
+
   const handleLogout = () => {
     sessionStorage.removeItem("authToken")
     window.location.href = "/"
@@ -556,6 +669,52 @@ export default function ExpertDashboard() {
                         <TrendingUp className="w-8 h-8 text-muted-foreground mx-auto mb-4" />
                         <h3 className="text-lg font-semibold mb-1">Data tidak ditemukan</h3>
                         <p className="text-sm text-muted-foreground">Tidak ada sesi untuk filter saat ini.</p>
+                      </div>
+                    )}
+
+                    {perGroupUserCharts.length > 0 && (
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="text-base font-semibold text-foreground">Grafik Tren Diagnosa per Pengguna</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Setiap grafik menampilkan perkembangan skor Depresi, Ansietas, dan Stres untuk satu pengguna dalam grup.
+                          </p>
+                        </div>
+
+                        {perGroupUserCharts.map((group) => (
+                          <div key={group.key} className="space-y-4 rounded-xl border border-border/40 bg-muted/10 p-4">
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                              <div className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
+                                <Users className="w-4 h-4 text-primary" />
+                                <span>{group.label}</span>
+                              </div>
+                              <Badge variant="outline" className="w-fit">{group.users.length} pengguna</Badge>
+                            </div>
+
+                            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                              {group.users.map((user) => (
+                                <div key={user.key} className="space-y-3 rounded-lg border border-border/40 bg-background p-4">
+                                  <div className="flex flex-col">
+                                    <span className="text-sm font-semibold text-foreground">{user.name}</span>
+                                    {user.email && <span className="text-xs text-muted-foreground">{user.email}</span>}
+                                  </div>
+                                  <ChartContainer config={USER_CHART_CONFIG} className="h-60 w-full">
+                                    <LineChart data={user.data}>
+                                      <CartesianGrid strokeDasharray="3 3" />
+                                      <XAxis dataKey="label" minTickGap={16} />
+                                      <YAxis />
+                                      <Legend />
+                                      <ChartTooltip content={<ChartTooltipContent indicator="line" />} />
+                                      <Line type="monotone" dataKey="depression" stroke={USER_CHART_COLORS.depression} strokeWidth={2} dot={false} connectNulls />
+                                      <Line type="monotone" dataKey="anxiety" stroke={USER_CHART_COLORS.anxiety} strokeWidth={2} dot={false} connectNulls />
+                                      <Line type="monotone" dataKey="stress" stroke={USER_CHART_COLORS.stress} strokeWidth={2} dot={false} connectNulls />
+                                    </LineChart>
+                                  </ChartContainer>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>

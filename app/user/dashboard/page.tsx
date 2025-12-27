@@ -75,6 +75,25 @@ const formatDass21Score = (score: number) => {
     return score + "%";
 }
 
+// --- Constants for DAS Chart ---
+const DAS_COLORS = {
+    depression: "#2563eb",
+    anxiety: "#8b5cf6",
+    stress: "#f97316",
+}
+
+const DAS_CHART_CONFIG: ChartConfig = {
+    depression: { label: "Depresi", color: DAS_COLORS.depression },
+    anxiety: { label: "Ansietas", color: DAS_COLORS.anxiety },
+    stress: { label: "Stres", color: DAS_COLORS.stress },
+}
+
+const DAS_SERIES = [
+    { key: "depression", label: "Depresi", color: DAS_COLORS.depression },
+    { key: "anxiety", label: "Ansietas", color: DAS_COLORS.anxiety },
+    { key: "stress", label: "Stres", color: DAS_COLORS.stress },
+]
+
 
 export default function UserDashboardPage() {
     const router = useRouter()
@@ -141,7 +160,7 @@ export default function UserDashboardPage() {
                 setHistoryRecords(response.data)
 
                 // Fetch Groups
-                const groupsResponse = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/groups`, {
+                const groupsResponse = await axios.get(`${process.env.NEXT_PUBLIC_API}/groups`, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
                 setGroups(groupsResponse.data || [])
@@ -171,7 +190,7 @@ export default function UserDashboardPage() {
         setLoadingGroups(true)
         try {
             const token = sessionStorage.getItem("authToken")
-            const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/admin/groups`, {
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_API}/groups`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
             setGroups(response.data || [])
@@ -380,38 +399,61 @@ export default function UserDashboardPage() {
         }
         const windowMs = timeWindowWeeks * 7 * 24 * 60 * 60 * 1000
         const threshold = Date.now() - windowMs
-        return chartData.filter((point) => {
+        
+        let data = chartData.filter((point) => {
             const rawTimestamp = point.timestamp
             const timestamp = typeof rawTimestamp === "number"
                 ? rawTimestamp
                 : new Date(rawTimestamp ?? 0).getTime()
             return Number.isFinite(timestamp) && timestamp >= threshold
         })
-    }, [chartData, timeWindowWeeks])
+
+        if (selectedGroupKey !== "all") {
+            // Filter to only points that have data for the selected group
+            data = data.filter((point) => point[selectedGroupKey] !== undefined)
+            
+            // Transform to DAS format
+            data = data.map((point) => {
+                const meta = point[`${selectedGroupKey}__meta`] as any
+                return {
+                    label: point.label,
+                    timestamp: point.timestamp,
+                    tooltipDate: point.tooltipDate,
+                    depression: meta?.depression ?? 0,
+                    anxiety: meta?.anxiety ?? 0,
+                    stress: meta?.stress ?? 0,
+                }
+            })
+        }
+
+        return data
+    }, [chartData, timeWindowWeeks, selectedGroupKey])
 
     const activeSeries = useMemo(() => {
         if (selectedGroupKey === "all") {
             return chartSeries
         }
-        const target = chartSeries.find((series) => series.key === selectedGroupKey)
-        return target ? [target] : []
+        return DAS_SERIES
     }, [chartSeries, selectedGroupKey])
 
     const activeChartConfig = useMemo<ChartConfig>(() => {
-        const config: ChartConfig = {}
-        activeSeries.forEach((series) => {
-            const baseEntry = chartConfig[series.key as keyof typeof chartConfig]
-            if (baseEntry) {
-                config[series.key] = {
-                    label: baseEntry.label ?? series.label,
-                    color: (baseEntry as { color?: string }).color ?? series.color,
+        if (selectedGroupKey === "all") {
+            const config: ChartConfig = {}
+            activeSeries.forEach((series) => {
+                const baseEntry = chartConfig[series.key as keyof typeof chartConfig]
+                if (baseEntry) {
+                    config[series.key] = {
+                        label: baseEntry.label ?? series.label,
+                        color: (baseEntry as { color?: string }).color ?? series.color,
+                    }
+                } else {
+                    config[series.key] = { label: series.label, color: series.color }
                 }
-            } else {
-                config[series.key] = { label: series.label, color: series.color }
-            }
-        })
-        return config
-    }, [activeSeries, chartConfig])
+            })
+            return config
+        }
+        return DAS_CHART_CONFIG
+    }, [activeSeries, chartConfig, selectedGroupKey])
 
     const hasFilteredData = filteredChartData.length > 0 && activeSeries.length > 0
 
@@ -870,42 +912,67 @@ export default function UserDashboardPage() {
                                                         />
                                                         <ChartTooltip
                                                             content={
-                                                                <ChartTooltipContent
-                                                                    labelFormatter={(label, items) =>
-                                                                        items?.[0]?.payload?.tooltipDate || label
-                                                                    }
-                                                                    formatter={(value, name, item) => {
-                                                                        if (value === null || value === undefined) {
-                                                                            return null
+                                                                selectedGroupKey === "all" ? (
+                                                                    <ChartTooltipContent
+                                                                        labelFormatter={(label, items) =>
+                                                                            items?.[0]?.payload?.tooltipDate || label
                                                                         }
-                                                                        const numericValue = Number(value)
-                                                                        if (Number.isNaN(numericValue)) {
-                                                                            return null
+                                                                        formatter={(value, name, item) => {
+                                                                            if (value === null || value === undefined) {
+                                                                                return null
+                                                                            }
+                                                                            const numericValue = Number(value)
+                                                                            if (Number.isNaN(numericValue)) {
+                                                                                return null
+                                                                            }
+                                                                            const dataKey = item.dataKey?.toString() ?? ""
+                                                                            const payload = item.payload as Record<string, any>
+                                                                            const meta = payload?.[`${dataKey}__meta`]
+                                                                            const groupLabel = meta?.groupName ?? resolveGroupLabel(dataKey, name)
+                                                                            return (
+                                                                                <div className="flex flex-col gap-1">
+                                                                                    <span className="font-medium text-foreground">{groupLabel}</span>
+                                                                                    <span className="text-xs text-muted-foreground">Tingkat tertinggi: {Math.round(numericValue)}%</span>
+                                                                                    {meta ? (
+                                                                                        <span className="text-[10px] text-muted-foreground">
+                                                                                            Dep {meta.depression}% · Ans {meta.anxiety}% · Str {meta.stress}%<br />Dominan: {meta.dominantLabel}
+                                                                                        </span>
+                                                                                    ) : null}
+                                                                                </div>
+                                                                            )
+                                                                        }}
+                                                                    />
+                                                                ) : (
+                                                                    <ChartTooltipContent
+                                                                        labelFormatter={(label, items) =>
+                                                                            items?.[0]?.payload?.tooltipDate || label
                                                                         }
-                                                                        const dataKey = item.dataKey?.toString() ?? ""
-                                                                        const payload = item.payload as Record<string, any>
-                                                                        const meta = payload?.[`${dataKey}__meta`]
-                                                                        const groupLabel = meta?.groupName ?? resolveGroupLabel(dataKey, name)
-                                                                        return (
-                                                                            <div className="flex flex-col gap-1">
-                                                                                <span className="font-medium text-foreground">{groupLabel}</span>
-                                                                                <span className="text-xs text-muted-foreground">Tingkat tertinggi: {Math.round(numericValue)}%</span>
-                                                                                {meta ? (
-                                                                                    <span className="text-[10px] text-muted-foreground">
-                                                                                        Dep {meta.depression}% · Ans {meta.anxiety}% · Str {meta.stress}%<br />Dominan: {meta.dominantLabel}
-                                                                                    </span>
-                                                                                ) : null}
-                                                                            </div>
-                                                                        )
-                                                                    }}
-                                                                />
+                                                                        formatter={(value, name) => {
+                                                                            if (value === null || value === undefined) {
+                                                                                return null
+                                                                            }
+                                                                            const numericValue = Number(value)
+                                                                            if (Number.isNaN(numericValue)) {
+                                                                                return null
+                                                                            }
+                                                                            return (
+                                                                                <div className="flex flex-col gap-1">
+                                                                                    <span className="font-medium text-foreground">{name}</span>
+                                                                                    <span className="text-xs text-muted-foreground">Skor: {Math.round(numericValue)}%</span>
+                                                                                </div>
+                                                                            )
+                                                                        }}
+                                                                    />
+                                                                )
                                                             }
                                                         />
                                                         <Legend
                                                             verticalAlign="bottom"
                                                             height={36}
                                                             formatter={(value: string, entry: any) =>
-                                                                resolveGroupLabel((entry?.dataKey as string) ?? value, value)
+                                                                selectedGroupKey === "all"
+                                                                    ? resolveGroupLabel((entry?.dataKey as string) ?? value, value)
+                                                                    : value
                                                             }
                                                         />
                                                         {activeSeries.map((series) => (
@@ -925,9 +992,12 @@ export default function UserDashboardPage() {
                                                     </RechartsLineChart>
                                                 </ChartContainer>
                                                 <p className="text-xs text-muted-foreground">
-                                                    Menampilkan {selectedGroupKey === "all" ? "semua grup pakar" : selectedGroupLabel} untuk {timeWindowWeeks === 1 ? "1 minggu" : `${timeWindowWeeks} minggu`} terakhir. Nilai menggambarkan tingkat gejala tertinggi (skala 0-100%).
+                                                    {selectedGroupKey === "all"
+                                                        ? `Menampilkan semua grup pakar untuk ${timeWindowWeeks === 1 ? "1 minggu" : `${timeWindowWeeks} minggu`} terakhir. Nilai menggambarkan tingkat gejala tertinggi (skala 0-100%).`
+                                                        : `Menampilkan skor Depresi, Ansietas, dan Stres untuk ${selectedGroupLabel} dalam ${timeWindowWeeks === 1 ? "1 minggu" : `${timeWindowWeeks} minggu`} terakhir.`
+                                                    }
                                                 </p>
-                                                {advancedInsights ? (
+                                                {advancedInsights && selectedGroupKey === "all" ? (
                                                     <div className="space-y-4 rounded-lg border border-border/60 bg-muted/10 p-4">
                                                         <div className="flex items-center gap-2 text-foreground">
                                                             <BarChart3 className="h-4 w-4 text-primary" />
