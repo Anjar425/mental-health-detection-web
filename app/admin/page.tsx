@@ -20,7 +20,8 @@ export default function AdminHomePage() {
     async function load() {
       setLoading(true)
       try {
-        const response = await getUsers({ page: 1, perPage: 1000 })
+        // Ambil maksimal 100 user (batas dari backend)
+        const response = await getUsers({ page: 1, perPage: 100 })
         const allAccounts = response.items || []
 
         const regularUsersCount = allAccounts.filter((u) => u.role === "user").length
@@ -77,7 +78,22 @@ export default function AdminHomePage() {
             <h2 className="text-xl font-semibold tracking-tight">Quick Actions</h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-4 gap-4">
+                        {/* Manage Groups Card */}
+                        <Link 
+                          href="/admin/groups" 
+                          className="p-6 border border-border bg-card rounded-xl hover:bg-accent/50 hover:border-primary/30 transition-all duration-200 shadow-sm group"
+                        >
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 bg-green-100 rounded-lg text-green-700 group-hover:bg-green-600 group-hover:text-white transition-colors">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M22 19v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
+                            <h3 className="font-semibold text-card-foreground group-hover:text-primary transition-colors">Manage Groups</h3>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Buat, edit, dan kelola grup pakar untuk kolaborasi dan analisis.
+                          </p>
+                        </Link>
             {/* Manage Users Card */}
             <Link 
               href="/admin/users" 
