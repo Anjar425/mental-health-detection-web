@@ -19,10 +19,10 @@ interface ResultsCardProps {
 	userRole: "user" | "guest"
 	onRestart: () => void
 	groupId?: number | null
+	groupName?: string | null
 }
 
-
-export function ResultsCard({ scores, userRole, onRestart, groupId }: ResultsCardProps) {
+export function ResultsCard({ scores, userRole, onRestart, groupId, groupName }: ResultsCardProps) {
 	const router = useRouter()
 
 	const handleBackToDashboard = () => {
@@ -76,9 +76,11 @@ export function ResultsCard({ scores, userRole, onRestart, groupId }: ResultsCar
 					<p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
 						Berikut adalah hasil evaluasi kesehatan mental Anda berdasarkan jawaban yang diberikan
 					</p>
-					{groupId && (
-						<div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium">
-							<span>Interpretasi menggunakan konsensus Grup ID: {groupId}</span>
+{(groupName || groupId) && (
+				<div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium">
+					<span>
+						Interpretasi menggunakan konsensus Grup: {groupName ? groupName : `ID ${groupId}`}
+					</span>
 						</div>
 					)}
 				</div>
