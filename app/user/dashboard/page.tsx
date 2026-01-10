@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { LogOut, Calendar, TrendingUp, Activity, ClipboardList, ArrowRight, AlertCircle, Trash2, ChevronLeft, ChevronRight, BarChart3 } from 'lucide-react'
+import { LogOut, Calendar, TrendingUp, Activity, ClipboardList, ArrowRight, AlertCircle, Trash2, ChevronLeft, ChevronRight, BarChart3, Info } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { jwtDecode } from "jwt-decode"
 import { Button } from "@/components/ui/button"
@@ -23,6 +23,7 @@ import { Slider } from "@/components/ui/slider"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import axios from "axios"
+import type { GroupExpertRanking } from "@/services/admin"
 
 // --- Interfaces ---
 interface HistoryItem {
@@ -117,6 +118,12 @@ export default function UserDashboardPage() {
     // State untuk Modal Pilih Grup
     const [showGroupModal, setShowGroupModal] = useState(false)
     const [loadingGroups, setLoadingGroups] = useState(false)
+    // State untuk Modal Detail Grup
+    const [showGroupDetailModal, setShowGroupDetailModal] = useState(false)
+    const [selectedGroupDetail, setSelectedGroupDetail] = useState<ExpertGroup | null>(null)
+    const [groupDetailLoading, setGroupDetailLoading] = useState(false)
+    const [groupDetailError, setGroupDetailError] = useState<string | null>(null)
+    const [groupDetailData, setGroupDetailData] = useState<any | null>(null)
 
     // State untuk filter visualisasi
     const [timeWindowWeeks, setTimeWindowWeeks] = useState(12)
@@ -928,7 +935,7 @@ export default function UserDashboardPage() {
                                                                             const dataKey = item.dataKey?.toString() ?? ""
                                                                             const payload = item.payload as Record<string, any>
                                                                             const meta = payload?.[`${dataKey}__meta`]
-                                                                            const groupLabel = meta?.groupName ?? resolveGroupLabel(dataKey, name)
+                                                                            const groupLabel = meta?.groupName ?? resolveGroupLabel(dataKey, String(name))
                                                                             return (
                                                                                 <div className="flex flex-col gap-1">
                                                                                     <span className="font-medium text-foreground">{groupLabel}</span>
@@ -1113,23 +1120,69 @@ export default function UserDashboardPage() {
                             ) : (
                                 <div className="grid gap-4 sm:grid-cols-2">
                                     {groups.map((group) => (
-                                        <button
+                                        <div
                                             key={group.id}
+                                            role="button"
+                                            tabIndex={0}
                                             className="text-left border border-border bg-card hover:bg-muted/40 rounded-xl p-4 transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                                             onClick={() => handleSelectGroup(group.id)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter" || e.key === " ") {
+                                                    e.preventDefault()
+                                                    handleSelectGroup(group.id)
+                                                }
+                                            }}
                                         >
                                             <div className="flex items-start justify-between gap-3">
-                                                <div>
-                                                    <h3 className="text-lg font-semibold text-foreground">{group.name}</h3>
+                                                <div className="min-w-0">
+                                                    <h3 className="text-lg font-semibold text-foreground truncate">{group.name}</h3>
                                                     <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                                                         {group.description || "Tidak ada deskripsi"}
                                                     </p>
                                                 </div>
-                                                <Badge variant="secondary" className="bg-primary/10 text-primary">
-                                                    {group.member_count ?? 0} Pakar
-                                                </Badge>
+                                                <div className="flex items-start gap-2">
+                                                    <Badge variant="secondary" className="bg-primary/10 text-primary whitespace-nowrap">
+                                                        {group.member_count ?? 0} Pakar
+                                                    </Badge>
+                                                    <button
+                                                        aria-label="Detail grup"
+                                                        className="p-2 rounded-md hover:bg-muted/60 text-muted-foreground hover:text-foreground"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            setSelectedGroupDetail(group)
+                                                            setShowGroupDetailModal(true)
+                                                                                                                        setGroupDetailLoading(true)
+                                                                                                                        setGroupDetailError(null)
+                                                                                                                        // Fetch anonymized public summary accessible to all users
+                                                                                                                        ;(async () => {
+                                                                                                                            try {
+                                                                                                                                const token = sessionStorage.getItem("authToken")
+                                                                                                                                const res = await fetch(`${process.env.NEXT_PUBLIC_API}/groups/${group.id}/summary`, {
+                                                                                                                                    headers: {
+                                                                                                                                        "Content-Type": "application/json",
+                                                                                                                                        Authorization: token ? `Bearer ${token}` : "",
+                                                                                                                                    },
+                                                                                                                                })
+                                                                                                                                if (!res.ok) {
+                                                                                                                                    const text = await res.text()
+                                                                                                                                    throw new Error(`API ${res.status}: ${text}`)
+                                                                                                                                }
+                                                                                                                                const summary = await res.json()
+                                                                                                                                setGroupDetailData(summary)
+                                                                                                                            } catch (err: any) {
+                                                                                                                                const msg = err?.message || "Gagal memuat ringkasan grup"
+                                                                                                                                setGroupDetailError(msg)
+                                                                                                                            } finally {
+                                                                                                                                setGroupDetailLoading(false)
+                                                                                                                            }
+                                                                                                                        })()
+                                                        }}
+                                                    >
+                                                        <Info className="w-4 h-4" />
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </button>
+                                        </div>
                                     ))}
                                 </div>
                             )}
@@ -1137,6 +1190,180 @@ export default function UserDashboardPage() {
                     </div>
                 </div>
             )}
+
+            {/* Modal Detail Grup (Anonymized) */}
+            {showGroupDetailModal && selectedGroupDetail && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+                    <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-xl w-full max-h-[80vh] overflow-hidden animate-in fade-in zoom-in-95">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
+                            <div>
+                                <h2 className="text-xl font-bold flex items-center gap-2">
+                                    <Info className="w-5 h-5 text-primary" /> Detail Grup
+                                </h2>
+                                <p className="text-xs text-muted-foreground">Rangkuman singkat dan data pakar (anonim).</p>
+                            </div>
+                            <button
+                                className="text-muted-foreground hover:text-destructive"
+                                onClick={() => setShowGroupDetailModal(false)}
+                                aria-label="Tutup"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(80vh-4rem)]">
+                            <div className="space-y-1">
+                                <h3 className="text-lg font-semibold text-foreground">{selectedGroupDetail.name}</h3>
+                                <p className="text-sm text-muted-foreground">
+                                    {selectedGroupDetail.description || "Tidak ada deskripsi untuk grup ini."}
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="border border-border rounded-lg p-3 bg-muted/20">
+                                    <p className="text-xs text-muted-foreground">Jumlah Pakar</p>
+                                    <p className="text-xl font-bold text-foreground">{selectedGroupDetail.member_count ?? (groupDetailData?.rankings.length ?? 0)}</p>
+                                </div>
+                                <div className="border border-border rounded-lg p-3 bg-muted/20">
+                                    <p className="text-xs text-muted-foreground">Kerahasiaan</p>
+                                    <p className="text-sm font-medium text-foreground">Identitas pakar disamarkan</p>
+                                </div>
+                            </div>
+
+                            {groupDetailLoading ? (
+                                <div className="border border-border rounded-lg p-4 bg-muted/20 text-sm text-muted-foreground">
+                                    Memuat ringkasan pakar...
+                                </div>
+                            ) : groupDetailError ? (
+                                <div className="border border-destructive rounded-lg p-4 bg-destructive/10 text-sm text-destructive">
+                                    {groupDetailError}
+                                </div>
+                            ) : (
+                                <AnonymizedSummaryFromSummary summary={groupDetailData} />
+                            )}
+
+                            <div className="flex items-center justify-end gap-3 pt-2">
+                                <Button variant="outline" onClick={() => setShowGroupDetailModal(false)}>
+                                    Tutup
+                                </Button>
+                                <Button
+                                    className="bg-blue-600 hover:bg-blue-700"
+                                    onClick={() => {
+                                        setShowGroupDetailModal(false)
+                                        setShowGroupModal(false)
+                                        handleSelectGroup(selectedGroupDetail.id)
+                                    }}
+                                >
+                                    Gunakan Grup Ini
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
+    )
+}
+
+// Render summary given rankings (fallback if needed)
+function AnonymizedSummary({ rankings }: { rankings: GroupExpertRanking[] }) {
+    const { s3Count, s2Count } = useMemo(() => {
+        let s3 = 0
+        let s2 = 0
+        rankings.forEach((r) => {
+            const level = (r.capability?.education_level ?? "").toString().toUpperCase()
+            if (level.includes("S3") || level.includes("DOKTOR")) s3 += 1
+            else if (level.includes("S2") || level.includes("MAGISTER")) s2 += 1
+        })
+        return { s3Count: s3, s2Count: s2 }
+    }, [rankings])
+
+    const maxExperienceYears = useMemo(() => {
+        return rankings.reduce((max, r) => {
+            const years = Number(r.capability?.flight_hours ?? 0)
+            return years > max ? years : max
+        }, 0)
+    }, [rankings])
+
+    const avgPatientsPerYear = useMemo(() => {
+        if (!rankings.length) return 0
+        const total = rankings.reduce((sum, r) => sum + Number(r.capability?.patient_count ?? 0), 0)
+        return Math.round(total / rankings.length)
+    }, [rankings])
+
+    const maxPublicationCount = useMemo(() => {
+        return rankings.reduce((max, r) => {
+            const pubs = Number(r.capability?.publication_count ?? 0)
+            return pubs > max ? pubs : max
+        }, 0)
+    }, [rankings])
+
+    return (
+        <div className="space-y-4">
+            <div className="border border-dashed border-border rounded-lg p-4 bg-background/60 text-sm text-muted-foreground">
+                Ringkasan dibuat secara anonim dari data pakar di grup ini. Identitas tidak ditampilkan.
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="border border-border rounded-lg p-3 bg-muted/20">
+                    <p className="text-xs text-muted-foreground">Pakar dengan pendidikan {s3Count > 0 ? "S3" : "S2"}</p>
+                    <p className="text-xl font-bold text-foreground">{s3Count > 0 ? s3Count : s2Count}</p>
+                </div>
+                <div className="border border-border rounded-lg p-3 bg-muted/20">
+                    <p className="text-xs text-muted-foreground">Pengalaman tertinggi</p>
+                    <p className="text-xl font-bold text-foreground">{maxExperienceYears} Tahun</p>
+                </div>
+                <div className="border border-border rounded-lg p-3 bg-muted/20">
+                    <p className="text-xs text-muted-foreground">Rata-rata pasien/tahun</p>
+                    <p className="text-xl font-bold text-foreground">{avgPatientsPerYear}</p>
+                </div>
+                <div className="border border-border rounded-lg p-3 bg-muted/20">
+                    <p className="text-xs text-muted-foreground">Publikasi tertinggi</p>
+                    <p className="text-xl font-bold text-foreground">{maxPublicationCount} publikasi</p>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+// Render summary given public summary payload from backend
+function AnonymizedSummaryFromSummary({ summary }: { summary: any }) {
+    if (!summary) {
+        return (
+            <div className="border border-dashed border-border rounded-lg p-4 bg-background/60 text-sm text-muted-foreground">
+                Ringkasan tidak tersedia.
+            </div>
+        )
+    }
+    const {
+        s3_count = 0,
+        s2_count = 0,
+        max_experience_years = 0,
+        avg_patient_per_year = 0,
+        max_publication_count = 0,
+    } = summary || {}
+    return (
+        <div className="space-y-4">
+            <div className="border border-dashed border-border rounded-lg p-4 bg-background/60 text-sm text-muted-foreground">
+                Ringkasan dibuat secara anonim dari data pakar di grup ini. Identitas tidak ditampilkan.
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="border border-border rounded-lg p-3 bg-muted/20">
+                    <p className="text-xs text-muted-foreground">Pakar dengan pendidikan {s3_count > 0 ? "S3" : "S2"}</p>
+                    <p className="text-xl font-bold text-foreground">{s3_count > 0 ? s3_count : s2_count}</p>
+                </div>
+                <div className="border border-border rounded-lg p-3 bg-muted/20">
+                    <p className="text-xs text-muted-foreground">Pengalaman tertinggi</p>
+                    <p className="text-xl font-bold text-foreground">{max_experience_years} Tahun</p>
+                </div>
+                <div className="border border-border rounded-lg p-3 bg-muted/20">
+                    <p className="text-xs text-muted-foreground">Rata-rata pasien/tahun</p>
+                    <p className="text-xl font-bold text-foreground">{avg_patient_per_year}</p>
+                </div>
+                <div className="border border-border rounded-lg p-3 bg-muted/20">
+                    <p className="text-xs text-muted-foreground">Publikasi tertinggi</p>
+                    <p className="text-xl font-bold text-foreground">{max_publication_count} publikasi</p>
+                </div>
+            </div>
+        </div>
     )
 }
