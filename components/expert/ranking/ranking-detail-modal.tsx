@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { Award, BarChart3, LayoutGrid, Users, X } from "lucide-react"
+import { jwtDecode } from "jwt-decode"
 
 import type { GroupConsensusRow, GroupExpertRanking, GroupRankingDetail } from "@/services/admin"
 
@@ -194,6 +195,8 @@ export function ExpertRankingModal({
   detail,
 }: ExpertRankingModalProps) {
   const [showConsensus, setShowConsensus] = useState(false)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [userRole, setUserRole] = useState<string | null>(null)
 
   useEffect(() => {
     if (open) {
@@ -201,10 +204,37 @@ export function ExpertRankingModal({
     }
   }, [open, detail])
 
+  // Decode auth token to get role/email for conditional UI (hide other experts for expert role)
+  useEffect(() => {
+    try {
+      const token = typeof window !== "undefined" ? sessionStorage.getItem("authToken") : null
+      if (token) {
+        const decoded: any = jwtDecode(token)
+        setUserRole(decoded?.role ?? null)
+        setUserEmail(decoded?.sub ?? null)
+      } else {
+        setUserRole(null)
+        setUserEmail(null)
+      }
+    } catch {
+      setUserRole(null)
+      setUserEmail(null)
+    }
+  }, [])
+
   const consensusRows = useMemo(() => {
     if (!detail?.consensus_matrix) return []
     return [...detail.consensus_matrix].sort((a, b) => a.question_id - b.question_id)
   }, [detail])
+
+  // Determine which rankings to show: for expert role, only show the logged-in expert's entry.
+  const visibleRankings = useMemo(() => {
+    const list = detail?.rankings ?? []
+    if (userRole === "expert" && userEmail) {
+      return list.filter((r) => r.email === userEmail)
+    }
+    return list
+  }, [detail, userRole, userEmail])
 
   if (!open) {
     return null
@@ -281,7 +311,7 @@ export function ExpertRankingModal({
 
               {showConsensus
                 ? renderConsensusMatrix(consensusRows, () => setShowConsensus(false))
-                : detail.rankings.length === 0
+                : visibleRankings.length === 0
                   ? (
                       <div className="border border-dashed border-border rounded-xl p-10 text-center text-muted-foreground">
                         Belum ada pakar di dalam grup ini.
@@ -289,7 +319,7 @@ export function ExpertRankingModal({
                     )
                   : (
                       <div className="space-y-4">
-                        {detail.rankings.map((ranking) => renderRankingCard(ranking))}
+                        {visibleRankings.map((ranking) => renderRankingCard(ranking))}
                       </div>
                     )}
             </>
