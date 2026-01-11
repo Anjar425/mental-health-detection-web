@@ -22,41 +22,35 @@ export function AdminNav() {
       ? pathname === "/admin"
       : pathname?.startsWith(path)
 
-    return `text-sm font-medium transition-colors hover:text-primary ${
+    return `text-sm font-medium transition-colors hover:text-primary whitespace-nowrap ${
       isActive ? "text-foreground" : "text-muted-foreground"
     }`
   }
 
   return (
-    <nav className="flex items-center justify-between mb-8 pb-4 border-b border-border">
-      <div className="flex items-center gap-6">
-        <Link href="/admin" className={getLinkClass("/admin")}>
-          Overview
-        </Link>
-        <Link href="/admin/users" className={getLinkClass("/admin/users")}>
-          Users
-        </Link>
-        <Link href="/admin/experts" className={getLinkClass("/admin/experts")}>
-          Experts
-        </Link>
-        <Link href="/admin/groups" className={getLinkClass("/admin/groups")}> 
-          Groups
-        </Link>
-        <Link href="/admin/rankings" className={getLinkClass("/admin/rankings")}> 
-          Rankings & Consensus
-        </Link>
+    <nav className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-8 pb-4 border-b border-border gap-3">
+      {/* Navigation Links - Scrollable on mobile */}
+      <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="flex items-center gap-4 sm:gap-6 min-w-max">
+          <Link href="/admin" className={getLinkClass("/admin")}>
+            Overview
+          </Link>
+          <Link href="/admin/users" className={getLinkClass("/admin/users")}>
+            Users
+          </Link>
+          <Link href="/admin/experts" className={getLinkClass("/admin/experts")}>
+            Experts
+          </Link>
+          <Link href="/admin/groups" className={getLinkClass("/admin/groups")}> 
+            Groups
+          </Link>
+          <Link href="/admin/rankings" className={getLinkClass("/admin/rankings")}> 
+            Rankings
+          </Link>
+        </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        {/* <button
-          className="text-sm font-medium px-3 py-1.5 border border-border rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-          onClick={() => {
-            navigator.clipboard.writeText(window.location.href)
-            // Opsional: Tambahkan toast notification di sini
-          }}
-        >
-          Copy link
-        </button> */}
+      <div className="flex items-center gap-3 self-end sm:self-auto">
         <button
           className="text-sm font-medium px-3 py-1.5 border border-border rounded-md text-destructive hover:bg-destructive/10 hover:border-destructive/30 transition-colors"
           onClick={handleLogout}

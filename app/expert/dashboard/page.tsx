@@ -190,6 +190,18 @@ export default function ExpertDashboard() {
       setManagedGroups(Array.isArray(payload.groups) ? payload.groups : [])
     } catch (error) {
       console.error("Failed to load expert history:", error)
+      // If unauthorized, clear session and redirect to logged-out page
+      // axios errors have a `response` property with status
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        try {
+          sessionStorage.removeItem("authToken")
+        } catch (e) {
+          /* ignore */
+        }
+        window.location.href = "/auth/logged-out?role=expert&reason=expired"
+        return
+      }
+
       setHistoryRecords([])
       setManagedGroups([])
       setHistoryError("Gagal memuat histori diagnosa. Silakan coba lagi nanti.")
@@ -223,8 +235,13 @@ export default function ExpertDashboard() {
         await fetchExpertHistory(token)
       } catch (err) {
         console.error("Error decoding token:", err)
-        setHistoryError("Gagal memuat histori diagnosa. Token tidak valid.")
-        setHistoryLoading(false)
+        // If token is invalid, clear session and redirect to logged-out/login
+        try {
+          sessionStorage.removeItem("authToken")
+        } catch (e) {
+          /* ignore */
+        }
+        window.location.href = "/auth/logged-out?role=expert&reason=expired"
       } finally {
         setLoading(false)
       }
@@ -539,48 +556,78 @@ export default function ExpertDashboard() {
     <main className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Dashboard Pakar</h1>
-            <p className="text-sm text-muted-foreground">{expertEmail}</p>
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">Dashboard Pakar</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">{expertEmail}</p>
           </div>
-          <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2 bg-transparent">
-            <LogOut className="w-4 h-4" />
-            Logout
+          <Button variant="outline" size="sm" onClick={handleLogout} className="gap-1 sm:gap-2 bg-transparent text-xs sm:text-sm shrink-0">
+            <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Logout</span>
           </Button>
         </div>
       </header>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-foreground mb-2">Kelola Sistem Pakar</h2>
-          <p className="text-muted-foreground">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        <div className="mb-4 sm:mb-8">
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-1 sm:mb-2">Kelola Sistem Pakar</h2>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Lakukan konfigurasi untuk sistem deteksi kesehatan mental berbasis DASS-21 dan DASS-42
           </p>
         </div>
 
-        <Tabs defaultValue="history" className="w-full space-y-6">
-          <TabsList className="grid w-full grid-cols-1 gap-2 rounded-xl border border-border/50 bg-muted/40 p-1 sm:grid-cols-5">
-            <TabsTrigger value="history" className="w-full rounded-lg text-sm font-semibold">Histori Diagnosa</TabsTrigger>
-            <TabsTrigger value="ranking" className="w-full rounded-lg text-sm font-semibold">Ranking Pakar</TabsTrigger>
-            <TabsTrigger value="preference" className="w-full rounded-lg text-sm font-semibold">Preferensi DASS-21</TabsTrigger>
-            <TabsTrigger value="profile" className="w-full rounded-lg text-sm font-semibold">Profil & Pengaruh</TabsTrigger>
-            <TabsTrigger value="ruleset" className="w-full rounded-lg text-sm font-semibold">Ruleset DASS-42</TabsTrigger>
+          <Tabs defaultValue="history" className="w-full space-y-4 sm:space-y-6">
+          <TabsList className="w-full grid grid-cols-2 grid-rows-3 gap-1 sm:gap-2 sm:grid-cols-5 sm:grid-rows-1 auto-rows-min rounded-xl border border-border/50 bg-muted/40 p-1 items-stretch justify-items-stretch overflow-hidden">
+            <TabsTrigger
+              value="history"
+              className="w-full h-full min-w-0 min-h-[48px] box-border relative z-0 rounded-lg text-xs sm:text-sm font-semibold px-3 py-2 flex items-center justify-center bg-muted/20 text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:z-10 overflow-hidden"
+            >
+              <span className="truncate">Histori</span>
+            </TabsTrigger>
+
+            <TabsTrigger
+              value="ranking"
+              className="w-full h-full min-w-0 min-h-[48px] box-border relative z-0 rounded-lg text-xs sm:text-sm font-semibold px-3 py-2 flex items-center justify-center bg-muted/20 text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:z-10 overflow-hidden"
+            >
+              <span className="truncate">Ranking</span>
+            </TabsTrigger>
+
+            <TabsTrigger
+              value="preference"
+              className="w-full h-full min-w-0 min-h-[48px] box-border relative z-0 rounded-lg text-xs sm:text-sm font-semibold px-3 py-2 flex items-center justify-center bg-muted/20 text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:z-10 overflow-hidden"
+            >
+              <span className="hidden sm:inline truncate">Preferensi</span>
+              <span className="sm:hidden truncate">Pref</span>
+            </TabsTrigger>
+
+            <TabsTrigger
+              value="profile"
+              className="w-full h-full min-w-0 min-h-[48px] box-border relative z-0 rounded-lg text-xs sm:text-sm font-semibold px-3 py-2 flex items-center justify-center bg-muted/20 text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:z-10 overflow-hidden"
+            >
+              <span className="truncate">Profil</span>
+            </TabsTrigger>
+
+            <TabsTrigger
+              value="ruleset"
+              className="w-full h-full col-span-2 sm:col-span-1 min-w-0 min-h-[48px] box-border relative z-0 rounded-lg text-xs sm:text-sm font-semibold px-3 py-2 flex items-center justify-center bg-muted/20 text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:z-10 overflow-hidden"
+            >
+              <span className="truncate">Ruleset</span>
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="history" className="space-y-8">
+          <TabsContent value="history" className="space-y-6 sm:space-y-8">
             <Card className="border-border/50 shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-primary" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   Insight Diagnosa Grup
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs sm:text-sm">
                   Visualisasi sesi pengguna yang menggunakan grup Anda.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
                 {historyLoading ? (
                   <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
                     Memuat histori grup...
@@ -723,37 +770,38 @@ export default function ExpertDashboard() {
             </Card>
 
             <Card className="border-border/50 shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-primary" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   Histori Diagnosa Pengguna
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs sm:text-sm">
                   Daftar sesi pengguna berdasarkan grup yang Anda kelola.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
                 {historyLoading ? (
                    <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">Loading...</div>
                 ) : !filteredHistoryRecords.length ? (
                   <div className="text-center py-8 text-muted-foreground text-sm">Belum ada histori.</div>
                 ) : (
                   <>
-                    <div className="flex flex-wrap gap-3 text-xs font-semibold text-muted-foreground mb-4">
-                      <Badge variant="outline">Total sesi: {summaryStats.totalSessions}</Badge>
-                      <Badge variant="outline">Pengguna unik: {summaryStats.uniqueUsers}</Badge>
-                      <Badge variant="outline">Grup aktif: {summaryStats.activeGroups}</Badge>
+                    <div className="flex flex-wrap gap-2 sm:gap-3 text-xs font-semibold text-muted-foreground mb-4">
+                      <Badge variant="outline" className="text-[10px] sm:text-xs">Total: {summaryStats.totalSessions}</Badge>
+                      <Badge variant="outline" className="text-[10px] sm:text-xs">User: {summaryStats.uniqueUsers}</Badge>
+                      <Badge variant="outline" className="text-[10px] sm:text-xs">Grup: {summaryStats.activeGroups}</Badge>
                     </div>
-                    <div className="overflow-x-auto rounded-md border">
+                    {/* Desktop View */}
+                    <div className="hidden md:block overflow-x-auto rounded-md border">
                       <table className="w-full text-sm text-left">
                         <thead className="bg-muted/40 text-muted-foreground uppercase text-xs">
                           <tr>
-                            <th className="px-6 py-3">Tanggal</th>
-                            <th className="px-6 py-3">Pengguna</th>
-                            <th className="px-6 py-3">Grup</th>
-                            <th className="px-6 py-3">Tipe</th>
-                            <th className="px-6 py-3">Dominan</th>
-                            <th className="px-6 py-3 text-center">Skor (D / A / S)</th>
+                            <th className="px-4 lg:px-6 py-3">Tanggal</th>
+                            <th className="px-4 lg:px-6 py-3">Pengguna</th>
+                            <th className="px-4 lg:px-6 py-3">Grup</th>
+                            <th className="px-4 lg:px-6 py-3">Tipe</th>
+                            <th className="px-4 lg:px-6 py-3">Dominan</th>
+                            <th className="px-4 lg:px-6 py-3 text-center">Skor (D / A / S)</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border/50">

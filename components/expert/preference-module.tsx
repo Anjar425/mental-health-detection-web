@@ -173,22 +173,23 @@ export function PreferenceModule() {
 	// }
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-4 sm:space-y-6">
 			{/* Input Form */}
 			<Card className="border-border/50">
-				<CardHeader>
-					<CardTitle>Input Preferensi Pakar DASS-21</CardTitle>
-					<CardDescription>Tentukan bobot Depression, Anxiety, dan Stress untuk setiap pertanyaan DASS-21</CardDescription>
+				<CardHeader className="p-3 sm:p-6">
+					<CardTitle className="text-base sm:text-lg">Input Preferensi Pakar DASS-21</CardTitle>
+					<CardDescription className="text-xs sm:text-sm">Tentukan bobot Depression, Anxiety, dan Stress untuk setiap pertanyaan DASS-21</CardDescription>
 				</CardHeader>
-				<CardContent className="space-y-6">
+				<CardContent className="p-3 sm:p-6 pt-0 sm:pt-0 space-y-4 sm:space-y-6">
 					<div className="space-y-2">
-						<label className="text-sm font-medium text-foreground">Pilih Pertanyaan DASS-21 (Q1-Q21)</label>
-						<div className="grid grid-cols-4 md:grid-cols-7 gap-2">
-							{DASS21_QUESTIONS.map((question) => (
+						<label className="text-xs sm:text-sm font-medium text-foreground">Pilih Pertanyaan DASS-21 (Q1-Q21)</label>
+						<div className="overflow-x-auto">
+							<div className="grid grid-cols-5 sm:grid-cols-7 gap-1.5 sm:gap-2 min-w-max">
+								{DASS21_QUESTIONS.map((question) => (
 								<button
 									key={question.code}
 									onClick={() => handleSelectQuestion(question.code)}
-									className={`px-3 py-2 rounded-lg text-sm font-medium transition-all border ${selectedQuestion === question.code
+									className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all border ${selectedQuestion === question.code
 										? "bg-primary text-primary-foreground border-primary"
 										: "bg-muted/50 text-foreground border-border/30 hover:border-primary/50"
 										}`}
@@ -196,11 +197,12 @@ export function PreferenceModule() {
 									{question.code}
 								</button>
 							))}
+							</div>
 						</div>
 						{selectedQuestion && (
-							<div className="mt-4 p-3 bg-muted/30 rounded-lg border border-border/50">
-								<p className="text-xs text-muted-foreground mb-1">Pertanyaan yang dipilih:</p>
-								<p className="text-sm font-medium text-foreground">
+							<div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-muted/30 rounded-lg border border-border/50">
+								<p className="text-[10px] sm:text-xs text-muted-foreground mb-1">Pertanyaan yang dipilih:</p>
+								<p className="text-xs sm:text-sm font-medium text-foreground">
 									{DASS21_QUESTIONS.find((q) => q.code === selectedQuestion)?.text}
 								</p>
 							</div>
@@ -208,9 +210,9 @@ export function PreferenceModule() {
 					</div>
 
 					{selectedQuestion && (
-						<div className="space-y-4">
+						<div className="space-y-3 sm:space-y-4">
 							<div>
-								<label className="text-sm font-medium text-foreground mb-3 block">
+								<label className="text-xs sm:text-sm font-medium text-foreground mb-2 sm:mb-3 block">
 									Depresi: {depression}%
 								</label>
 								<Slider
@@ -228,7 +230,7 @@ export function PreferenceModule() {
 							</div>
 
 							<div>
-								<label className="text-sm font-medium text-foreground mb-3 block">
+								<label className="text-xs sm:text-sm font-medium text-foreground mb-2 sm:mb-3 block">
 									Kecemasan: {anxiety}%
 								</label>
 								<Slider
@@ -246,7 +248,7 @@ export function PreferenceModule() {
 							</div>
 
 							<div>
-								<label className="text-sm font-medium text-foreground mb-3 block">
+								<label className="text-xs sm:text-sm font-medium text-foreground mb-2 sm:mb-3 block">
 									Stres: {stress}%
 								</label>
 								<Slider
@@ -263,20 +265,20 @@ export function PreferenceModule() {
 								/>
 							</div>
 
-							<div className="mb-4 p-3 bg-muted/30 rounded-lg border border-border/50">
-								<p className="text-sm font-medium text-foreground">
+							<div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-muted/30 rounded-lg border border-border/50">
+								<p className="text-xs sm:text-sm font-medium text-foreground">
 									Total Persentase: <span className={totalPercentage === 100 ? "text-green-600" : "text-destructive"}>{totalPercentage}%</span>
 								</p>
-								<p className="text-xs text-muted-foreground mt-1">Total harus 100% untuk bisa menambah preferensi</p>
+								<p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Total harus 100% untuk bisa menambah preferensi</p>
 							</div>
 						</div>
 					)}
 					<Button
 						onClick={handleAddPreference}
-						className="w-full bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
+						className="w-full bg-primary hover:bg-primary/90 text-primary-foreground gap-2 text-xs sm:text-sm"
 						disabled={!selectedQuestion || totalPercentage !== 100}
 					>
-						<Plus className="w-4 h-4" />
+						<Plus className="w-3 h-3 sm:w-4 sm:h-4" />
 						{isEditing ? "Simpan Perubahan" : "Tambah Preferensi"}
 					</Button>
 
@@ -285,35 +287,35 @@ export function PreferenceModule() {
 
 			{/* Preferences List */}
 			<Card className="border-border/50">
-				<CardHeader>
-					<CardTitle>Daftar Preferensi ({preferences.length})</CardTitle>
+				<CardHeader className="p-3 sm:p-6">
+					<CardTitle className="text-base sm:text-lg">Daftar Preferensi ({preferences.length})</CardTitle>
 				</CardHeader>
-				<CardContent>
-					<div className="space-y-3">
+				<CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+					<div className="space-y-2 sm:space-y-3">
 						{preferences.map((pref) => (
 							<div
 								key={pref.questionCode}
-								className="p-4 border border-border/30 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors"
+								className="p-3 sm:p-4 border border-border/30 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors"
 							>
-								<div className="flex items-start justify-between gap-4 mb-3">
+								<div className="flex items-start justify-between gap-3 sm:gap-4 mb-2 sm:mb-3">
 									<div className="flex-1">
-										<div className="flex items-center gap-2 mb-2">
-											<span className="inline-block px-2 py-1 rounded bg-primary/20 text-primary text-sm font-semibold">
+										<div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+											<span className="inline-block px-1.5 sm:px-2 py-0.5 sm:py-1 rounded bg-primary/20 text-primary text-xs sm:text-sm font-semibold">
 												{pref.questionCode}
 											</span>
 										</div>
-										<p className="text-sm text-foreground mb-3 leading-relaxed">{pref.questionText}</p>
-										<div className="grid grid-cols-3 gap-3 text-sm">
-											<div className="p-2 bg-blue-500/10 rounded border border-blue-500/30">
-												<p className="text-muted-foreground text-xs">Depresi</p>
+										<p className="text-xs sm:text-sm text-foreground mb-2 sm:mb-3 leading-relaxed">{pref.questionText}</p>
+										<div className="grid grid-cols-3 gap-1.5 sm:gap-3 text-xs sm:text-sm">
+											<div className="p-1.5 sm:p-2 bg-blue-500/10 rounded border border-blue-500/30">
+												<p className="text-muted-foreground text-[10px] sm:text-xs">Depresi</p>
 												<p className="font-semibold text-foreground">{pref.depression}%</p>
 											</div>
-											<div className="p-2 bg-orange-500/10 rounded border border-orange-500/30">
-												<p className="text-muted-foreground text-xs">Kecemasan</p>
+											<div className="p-1.5 sm:p-2 bg-orange-500/10 rounded border border-orange-500/30">
+												<p className="text-muted-foreground text-[10px] sm:text-xs">Kecemasan</p>
 												<p className="font-semibold text-foreground">{pref.anxiety}%</p>
 											</div>
-											<div className="p-2 bg-red-500/10 rounded border border-red-500/30">
-												<p className="text-muted-foreground text-xs">Stres</p>
+											<div className="p-1.5 sm:p-2 bg-red-500/10 rounded border border-red-500/30">
+												<p className="text-muted-foreground text-[10px] sm:text-xs">Stres</p>
 												<p className="font-semibold text-foreground">{pref.stress}%</p>
 											</div>
 										</div>

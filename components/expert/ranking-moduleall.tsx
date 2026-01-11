@@ -60,8 +60,8 @@ export function RankingModule() {
     fetchData()
   }, [])
 
-  if (loading) return <div className="p-8 text-center text-muted-foreground animate-pulse">Memuat analisis ranking SAW...</div>
-  if (error) return <div className="p-8 text-center text-destructive flex flex-col items-center gap-2"><AlertCircle />{error}</div>
+  if (loading) return <div className="p-4 sm:p-8 text-center text-xs sm:text-sm text-muted-foreground animate-pulse">Memuat analisis ranking SAW...</div>
+  if (error) return <div className="p-4 sm:p-8 text-center text-destructive flex flex-col items-center gap-2 text-xs sm:text-sm"><AlertCircle className="w-5 h-5 sm:w-6 sm:h-6" />{error}</div>
   if (!data) return null
 
   // Helper untuk warna progress bar
@@ -73,17 +73,17 @@ export function RankingModule() {
 
   // Icon mapping helper
   const getRankIcon = (index: number) => {
-    if (index === 0) return <Trophy className="w-6 h-6 text-yellow-500" />
-    if (index === 1) return <Medal className="w-6 h-6 text-slate-400" />
-    if (index === 2) return <Medal className="w-6 h-6 text-amber-600" />
-    return <span className="text-lg font-bold text-muted-foreground w-6 text-center">{index + 1}</span>
+    if (index === 0) return <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
+    if (index === 1) return <Medal className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400" />
+    if (index === 2) return <Medal className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" />
+    return <span className="text-sm sm:text-lg font-bold text-muted-foreground w-5 sm:w-6 text-center">{index + 1}</span>
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-4 sm:space-y-8 animate-in fade-in duration-500">
       
       {/* SECTION 1: Global Weights Visualization */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
         <WeightCard 
           icon={<GraduationCap className="w-4 h-4" />}
           title="Rata-rata Pend."
@@ -112,52 +112,51 @@ export function RankingModule() {
 
       {/* SECTION 2: The Leaderboard */}
       <Card className="border-border/50 shadow-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-primary" />
+        <CardHeader className="p-3 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
             Peringkat Rekomendasi Pakar
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs sm:text-sm">
             Skor dihitung berdasarkan profil pakar dikalikan dengan <b>Rata-rata Bobot Global</b> (Simulasi SAW).
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0 space-y-4 sm:space-y-6">
           {data.rankings.map((expert, index) => (
             <div 
               key={expert.expert_email}
-              className={`group relative p-4 rounded-xl border transition-all hover:shadow-md ${
+              className={`group relative p-3 sm:p-4 rounded-xl border transition-all hover:shadow-md ${
                 index === 0 ? "border-primary/50 bg-primary/5" : "border-border/40 hover:bg-muted/30"
               }`}
             >
-              <div className="flex flex-col md:flex-row md:items-center gap-4">
+              <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center">
                 
                 {/* Rank Number/Icon */}
-                <div className="flex items-center gap-4 min-w-[50px]">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-background border border-border shadow-sm">
+                <div className="flex items-center gap-3 sm:gap-4 min-w-[50px]">
+                  <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-background border border-border shadow-sm">
                     {getRankIcon(index)}
                   </div>
                 </div>
 
                 {/* Expert Info */}
-                <div className="flex-1 min-w-[200px]">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-foreground truncate">{expert.expert_email}</h3>
+                    <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{expert.expert_email}</h3>
                     {/* Top Recommended badge removed here */}
                   </div>
-                  <p className="text-sm text-muted-foreground flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1 bg-muted px-2 py-0.5 rounded text-xs">
-                      <GraduationCap className="w-3 h-3" /> {expert.details.education_str}
-                    </span>
+                  <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1 bg-muted px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs">
+                      <GraduationCap className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> {expert.details.education_str}
                   </p>
                 </div>
 
                 {/* Total Score Bar */}
                 <div className="flex-1 w-full md:max-w-[300px] space-y-1">
-                  <div className="flex justify-between text-xs mb-1">
+                  <div className="flex justify-between text-[10px] sm:text-xs mb-1">
                     <span className="font-medium text-muted-foreground">Total Skor SAW</span>
                     <span className="font-bold text-foreground">{expert.score}</span>
                   </div>
-                  <div className="h-3 w-full bg-secondary/30 rounded-full overflow-hidden">
+                  <div className="h-2 sm:h-3 w-full bg-secondary/30 rounded-full overflow-hidden">
                     <div 
                       className={`h-full rounded-full transition-all duration-1000 ${getScoreColor(expert.score)}`} 
                       style={{ width: `${expert.score}%` }}
@@ -167,7 +166,7 @@ export function RankingModule() {
               </div>
 
               {/* Detailed Breakdown (Mini Bars) */}
-              <div className="mt-4 pt-4 border-t border-border/30 grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border/30 grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
                  <MiniStat 
                    label="Kontribusi Pend." 
                    normalized={expert.details.normalized_scores.education} 
@@ -197,7 +196,7 @@ export function RankingModule() {
           ))}
 
           {data.rankings.length === 0 && (
-             <div className="text-center py-10 text-muted-foreground">Belum ada data pakar untuk diperingkat.</div>
+             <div className="text-center py-6 sm:py-10 text-xs sm:text-sm text-muted-foreground">Belum ada data pakar untuk diperingkat.</div>
           )}
         </CardContent>
       </Card>
@@ -210,14 +209,14 @@ function WeightCard({ icon, title, value, color }: { icon: any, title: string, v
   return (
     <Card className="border-border/40 bg-card/50 overflow-hidden relative">
       <div className={`absolute top-0 left-0 w-1 h-full ${color}`} />
-      <CardContent className="p-4 flex items-center justify-between">
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-            {icon} {title}
+      <CardContent className="p-2 sm:p-4 flex items-center justify-between">
+        <div className="space-y-0.5 sm:space-y-1">
+          <p className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1 sm:gap-1.5">
+            {icon} <span className="truncate">{title}</span>
           </p>
-          <p className="text-2xl font-bold tracking-tight">{Number(value).toFixed(2)}%</p>
+          <p className="text-lg sm:text-2xl font-bold tracking-tight">{Number(value).toFixed(2)}%</p>
         </div>
-        <div className={`h-10 w-10 rounded-full opacity-10 flex items-center justify-center ${color.replace('bg-', 'text-')}`}>
+        <div className={`h-6 w-6 sm:h-10 sm:w-10 rounded-full opacity-10 flex items-center justify-center ${color.replace('bg-', 'text-')}`}>
            {icon}
         </div>
       </CardContent>

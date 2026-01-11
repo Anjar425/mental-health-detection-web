@@ -255,34 +255,34 @@ export function RulesetModule() {
 	const hasThenConjunction = premises.some((p) => p.conjunction === "THEN")
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-4 sm:space-y-6">
 			{/* Input Form */}
 			<Card className="border-border/50">
-				<CardHeader>
-					<CardTitle>Input Ruleset DASS-42</CardTitle>
-					<CardDescription>Buat aturan dengan premis kompleks menggunakan AND/OR/THEN logic</CardDescription>
+				<CardHeader className="p-3 sm:p-6">
+					<CardTitle className="text-base sm:text-lg">Input Ruleset DASS-42</CardTitle>
+					<CardDescription className="text-xs sm:text-sm">Buat aturan dengan premis kompleks menggunakan AND/OR/THEN logic</CardDescription>
 				</CardHeader>
-				<CardContent className="space-y-6">
+				<CardContent className="p-3 sm:p-6 pt-0 sm:pt-0 space-y-4 sm:space-y-6">
 					{/* Premises Section */}
-					<div className="space-y-4">
+					<div className="space-y-3 sm:space-y-4">
 						<div className="flex items-center justify-between">
-							<h3 className="font-semibold text-foreground">Premis (Conditions)</h3>
+							<h3 className="font-semibold text-sm sm:text-base text-foreground">Premis (Conditions)</h3>
 						</div>
 
-						<div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border/30">
+						<div className="space-y-2 sm:space-y-3 p-2 sm:p-4 bg-muted/30 rounded-lg border border-border/30">
 							{premises.map((premise, index) => (
-								<div key={premise.id} className="space-y-3 p-3 bg-background rounded-lg border border-border/20">
-									<div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+								<div key={premise.id} className="space-y-2 sm:space-y-3 p-2 sm:p-3 bg-background rounded-lg border border-border/20">
+									<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
 										{/* Prefix */}
-										<div className="space-y-2">
-											<label className="text-xs font-medium text-muted-foreground">Prefix</label>
+										<div className="space-y-1 sm:space-y-2">
+											<label className="text-[10px] sm:text-xs font-medium text-muted-foreground">Prefix</label>
 											<Select
 												value={premise.prefix}
 												onValueChange={(value) =>
 													handleUpdatePremise(premise.id, "prefix", value as "No Prefix" | "Not")
 												}
 											>
-												<SelectTrigger className="bg-background border-border/50 h-9">
+												<SelectTrigger className="bg-background border-border/50 h-8 sm:h-9 text-xs sm:text-sm">
 													<SelectValue />
 												</SelectTrigger>
 												<SelectContent>
@@ -293,15 +293,15 @@ export function RulesetModule() {
 										</div>
 
 										{/* Questionnaire */}
-										<div className="space-y-2">
-											<label className="text-xs font-medium text-muted-foreground">Kuisioner</label>
+										<div className="space-y-1 sm:space-y-2">
+											<label className="text-[10px] sm:text-xs font-medium text-muted-foreground">Kuisioner</label>
 											<Select
 												value={premise.questionnaire}
 												onValueChange={(value) =>
 													handleUpdatePremise(premise.id, "questionnaire", value)
 												}
 											>
-												<SelectTrigger className="bg-background border-border/50 h-9">
+												<SelectTrigger className="bg-background border-border/50 h-8 sm:h-9 text-xs sm:text-sm">
 													<SelectValue />
 												</SelectTrigger>
 												<SelectContent className="max-h-60">
@@ -315,15 +315,15 @@ export function RulesetModule() {
 										</div>
 
 										{/* Severity */}
-										<div className="space-y-2">
-											<label className="text-xs font-medium text-muted-foreground">Tingkat Keparahan</label>
+										<div className="space-y-1 sm:space-y-2">
+											<label className="text-[10px] sm:text-xs font-medium text-muted-foreground">Tingkat</label>
 											<Select
 												value={premise.severity}
 												onValueChange={(value) =>
 													handleUpdatePremise(premise.id, "severity", value as "Low" | "Medium" | "High")
 												}
 											>
-												<SelectTrigger className="bg-background border-border/50 h-9">
+												<SelectTrigger className="bg-background border-border/50 h-8 sm:h-9 text-xs sm:text-sm">
 													<SelectValue />
 												</SelectTrigger>
 												<SelectContent>
@@ -335,15 +335,15 @@ export function RulesetModule() {
 										</div>
 
 										{/* Conjunction */}
-										<div className="space-y-2">
-											<label className="text-xs font-medium text-muted-foreground">Konjungsi</label>
+										<div className="space-y-1 sm:space-y-2">
+											<label className="text-[10px] sm:text-xs font-medium text-muted-foreground">Konjungsi</label>
 											<Select
 												value={premise.conjunction}
 												onValueChange={(value) =>
 													handleUpdatePremise(premise.id, "conjunction", value as "AND" | "OR" | "THEN")
 												}
 											>
-												<SelectTrigger className="bg-background border-border/50 h-9">
+												<SelectTrigger className="bg-background border-border/50 h-8 sm:h-9 text-xs sm:text-sm">
 													<SelectValue />
 												</SelectTrigger>
 												<SelectContent>
@@ -363,9 +363,9 @@ export function RulesetModule() {
 													variant="ghost"
 													size="sm"
 													onClick={() => handleRemovePremise(premise.id)}
-													className="text-destructive hover:text-destructive"
+													className="text-destructive hover:text-destructive h-8 sm:h-9"
 												>
-													<X className="w-4 h-4" />
+													<X className="w-3 h-3 sm:w-4 sm:h-4" />
 												</Button>
 											)}
 										</div>
@@ -376,30 +376,30 @@ export function RulesetModule() {
 							<Button
 								variant="outline"
 								onClick={handleAddPremise}
-								className="w-full gap-2"
+								className="w-full gap-2 text-xs sm:text-sm"
 								disabled={hasThenConjunction}
 							>
-								<Plus className="w-4 h-4" />
+								<Plus className="w-3 h-3 sm:w-4 sm:h-4" />
 								Tambah Premis
 							</Button>
 						</div>
 					</div>
 
 					{/* Conclusion Section */}
-					<div className="space-y-4">
-						<h3 className="font-semibold text-foreground">Konklusi (Conclusion)</h3>
+					<div className="space-y-3 sm:space-y-4">
+						<h3 className="font-semibold text-sm sm:text-base text-foreground">Konklusi (Conclusion)</h3>
 
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg border border-border/30">
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-2 sm:p-4 bg-muted/30 rounded-lg border border-border/30">
 							{/* Category */}
-							<div className="space-y-2">
-								<label className="text-sm font-medium text-foreground">Kategori</label>
+							<div className="space-y-1 sm:space-y-2">
+								<label className="text-xs sm:text-sm font-medium text-foreground">Kategori</label>
 								<Select
 									value={conclusion.category}
 									onValueChange={(value) =>
 										setConclusion({ ...conclusion, category: value as "Anxiety" | "Depression" | "Stress" })
 									}
 								>
-									<SelectTrigger className="bg-background border-border/50">
+									<SelectTrigger className="bg-background border-border/50 text-xs sm:text-sm">
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
@@ -413,15 +413,15 @@ export function RulesetModule() {
 							</div>
 
 							{/* Severity */}
-							<div className="space-y-2">
-								<label className="text-sm font-medium text-foreground">Tingkat Keparahan</label>
+							<div className="space-y-1 sm:space-y-2">
+								<label className="text-xs sm:text-sm font-medium text-foreground">Tingkat Keparahan</label>
 								<Select
 									value={conclusion.severity}
 									onValueChange={(value) =>
 										setConclusion({ ...conclusion, severity: value as "Normal" | "Mild" | "Moderate" | "Severe" | "Extreme" })
 									}
 								>
-									<SelectTrigger className="bg-background border-border/50">
+									<SelectTrigger className="bg-background border-border/50 text-xs sm:text-sm">
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
@@ -437,18 +437,19 @@ export function RulesetModule() {
 					</div>
 
 					{/* Action Buttons */}
-					<div className="flex gap-3">
+					<div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
 						<Button
 							onClick={handleSaveRule}
-							className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
+							className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground gap-2 text-xs sm:text-sm"
 						>
-							<Plus className="w-4 h-4" />
+							<Plus className="w-3 h-3 sm:w-4 sm:h-4" />
 							{isEditing ? "Simpan Perubahan" : "Tambah Ruleset"}
 						</Button>
 						{isEditing && (
 							<Button
 								variant="outline"
 								onClick={handleCancel}
+								className="text-xs sm:text-sm"
 							>
 								Batal
 							</Button>
@@ -456,11 +457,11 @@ export function RulesetModule() {
 					</div>
 					{successMessage && (
 						<div
-							className="mb-4 p-3 rounded-lg border border-green-500/40 bg-green-500/10 text-green-700 
+							className="mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg border border-green-500/40 bg-green-500/10 text-green-700 
                    shadow transition-opacity duration-700 animate-fade"
 						>
-							<p className="text-sm font-semibold">{successMessage}</p>
-							<p className="text-xs opacity-80 mt-1">
+							<p className="text-xs sm:text-sm font-semibold">{successMessage}</p>
+							<p className="text-[10px] sm:text-xs opacity-80 mt-1">
 								Perubahan berhasil disimpan.
 							</p>
 						</div>
@@ -471,21 +472,21 @@ export function RulesetModule() {
 
 			{/* Rules List */}
 			<Card className="border-border/50">
-				<CardHeader>
-					<CardTitle>Daftar Ruleset ({rules.length})</CardTitle>
+				<CardHeader className="p-3 sm:p-6">
+					<CardTitle className="text-base sm:text-lg">Daftar Ruleset ({rules.length})</CardTitle>
 				</CardHeader>
-				<CardContent>
-					<div className="space-y-3">
+				<CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+					<div className="space-y-2 sm:space-y-3">
 						{rules.map((rule) => (
 							<div
 								key={rule.id}
-								className="p-4 border border-border/30 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors"
+								className="p-3 sm:p-4 border border-border/30 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors"
 							>
-								<div className="flex items-start justify-between gap-4">
-									<div className="flex-1 min-w-0">
+								<div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
+									<div className="flex-1 min-w-0 w-full">
 										{/* Rule Logic Display */}
-										<div className="mb-3 p-3 bg-background rounded border border-border/20">
-											<p className="text-sm font-mono text-foreground">
+										<div className="mb-2 sm:mb-3 p-2 sm:p-3 bg-background rounded border border-border/20 overflow-x-auto">
+											<p className="text-xs sm:text-sm font-mono text-foreground whitespace-normal sm:whitespace-nowrap break-words">
 												{rule.premises.map((p, idx) => (
 													<span key={p.id}>
 														{p.prefix === "Not" && <span className="text-amber-600">NOT </span>}
@@ -502,13 +503,13 @@ export function RulesetModule() {
 										</div>
 
 										{/* Conclusion */}
-										<div className="flex items-center gap-2">
-											<span className="text-sm font-medium text-foreground">Hasil:</span>
-											<span className="text-sm px-3 py-1 rounded-full bg-primary/20 text-primary">
+										<div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+											<span className="text-xs sm:text-sm font-medium text-foreground">Hasil:</span>
+											<span className="text-xs sm:text-sm px-2 sm:px-3 py-0.5 sm:py-1 rounded-full bg-primary/20 text-primary">
 												{rule.conclusion.category}
 											</span>
 											<span
-												className={`text-xs px-2 py-1 rounded-full ${rule.conclusion.severity === "Severe" || rule.conclusion.severity === "Extreme"
+												className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full ${rule.conclusion.severity === "Severe" || rule.conclusion.severity === "Extreme"
 													? "bg-destructive/20 text-destructive"
 													: rule.conclusion.severity === "Moderate"
 														? "bg-amber-500/20 text-amber-700"
@@ -521,9 +522,9 @@ export function RulesetModule() {
 									</div>
 
 									{/* Action Buttons */}
-									<div className="flex gap-2">
-										<Button variant="outline" size="sm" onClick={() => handleEdit(rule)} className="gap-1">
-											<Edit2 className="w-4 h-4" />
+									<div className="flex gap-2 self-end sm:self-start">
+										<Button variant="outline" size="sm" onClick={() => handleEdit(rule)} className="gap-1 h-7 sm:h-8 text-xs">
+											<Edit2 className="w-3 h-3 sm:w-4 sm:h-4" />
 										</Button>
 										{/* <Button
 											variant="outline"

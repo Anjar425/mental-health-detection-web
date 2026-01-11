@@ -175,34 +175,34 @@ export function DassQuestionnaire() {
     const currentResponse = responses[currentQuestionData?.id]
 
     return (
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-            <div className="w-full max-w-3xl space-y-6">
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-3 sm:p-4">
+            <div className="w-full max-w-3xl space-y-4 sm:space-y-6">
                 
-                <div className="text-center mb-8 pt-4">
-                    <h1 className="text-3xl font-bold text-foreground mb-2">
+                <div className="text-center mb-4 sm:mb-8 pt-2 sm:pt-4">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2">
                         Kuisioner DASS-21
                     </h1>
-                    <p className="text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                         Jawablah berdasarkan kondisi Anda selama seminggu terakhir.
                     </p>
-                    <div className="mt-4 flex justify-center gap-2">
+                    <div className="mt-3 sm:mt-4 flex justify-center gap-2 flex-wrap">
                          {userToken ? (
-                            <Badge className="bg-green-600">Mode: Pengguna</Badge>
+                            <Badge className="bg-green-600 text-xs">Mode: Pengguna</Badge>
                          ) : (
-                            <Badge variant="outline">Mode: Tamu</Badge>
+                            <Badge variant="outline" className="text-xs">Mode: Tamu</Badge>
                          )}
-                         <Badge variant="secondary">
+                         <Badge variant="secondary" className="text-xs">
                             Soal {currentQuestion + 1} / {dassQuestions.length}
                          </Badge>
                     </div>
                 </div>
 
-                <div className="mb-6 space-y-2">
-                    <div className="flex justify-between text-xs text-muted-foreground">
+                <div className="mb-4 sm:mb-6 space-y-2">
+                    <div className="flex justify-between text-[10px] sm:text-xs text-muted-foreground">
                         <span>Progress</span>
                         <span>{Math.round(progress)}%</span>
                     </div>
-                    <Progress value={progress} className="h-2" />
+                    <Progress value={progress} className="h-1.5 sm:h-2" />
                 </div>
 
                 <QuestionCard
@@ -214,12 +214,12 @@ export function DassQuestionnaire() {
                     onResponse={handleResponse}
                 />
 
-                <div className="flex justify-between items-center pt-4">
+                <div className="flex justify-between items-center pt-4 gap-3">
                     <Button
                         variant="outline"
                         onClick={handlePrevious}
                         disabled={currentQuestion === 0 || isSubmitting}
-                        className="w-32"
+                        className="flex-1 sm:w-32 sm:flex-none text-xs sm:text-sm"
                     >
                         Sebelumnya
                     </Button>
@@ -227,31 +227,31 @@ export function DassQuestionnaire() {
                     <Button 
                         onClick={handleNext} 
                         disabled={currentResponse === undefined || isSubmitting} 
-                        className="w-32"
+                        className="flex-1 sm:w-32 sm:flex-none text-xs sm:text-sm"
                     >
                         {isSubmitting ? "Memproses..." : (currentQuestion === dassQuestions.length - 1 ? "Selesai" : "Selanjutnya")}
                     </Button>
                 </div>
 
-                <Card className="mt-8 border-dashed bg-muted/20 shadow-none">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground text-center">
+                <Card className="mt-4 sm:mt-8 border-dashed bg-muted/20 shadow-none">
+                    <CardHeader className="pb-2 p-3 sm:p-6 sm:pb-2">
+                        <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground text-center">
                             Panduan Skala Penilaian (0 - 3)
                         </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center text-xs">
-                            <div className="p-2 rounded bg-background border">
-                                <strong className="block text-lg">0</strong> Tidak pernah
+                    <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 sm:gap-2 text-center text-[10px] sm:text-xs">
+                            <div className="p-1.5 sm:p-2 rounded bg-background border">
+                                <strong className="block text-sm sm:text-lg">0</strong> Tidak pernah
                             </div>
-                            <div className="p-2 rounded bg-background border">
-                                <strong className="block text-lg">1</strong> Kadang-kadang
+                            <div className="p-1.5 sm:p-2 rounded bg-background border">
+                                <strong className="block text-sm sm:text-lg">1</strong> Kadang-kadang
                             </div>
-                            <div className="p-2 rounded bg-background border">
-                                <strong className="block text-lg">2</strong> Sering
+                            <div className="p-1.5 sm:p-2 rounded bg-background border">
+                                <strong className="block text-sm sm:text-lg">2</strong> Sering
                             </div>
-                            <div className="p-2 rounded bg-background border">
-                                <strong className="block text-lg">3</strong> Hampir selalu
+                            <div className="p-1.5 sm:p-2 rounded bg-background border">
+                                <strong className="block text-sm sm:text-lg">3</strong> Hampir selalu
                             </div>
                         </div>
                     </CardContent>

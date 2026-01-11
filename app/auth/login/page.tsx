@@ -74,14 +74,14 @@ export default function ExpertLoginPage() {
 	}
 
 	return (
-		<main className="min-h-screen bg-linear-to-br from-background via-background to-muted/30 flex items-center justify-center px-4 py-12">
+		<main className="min-h-screen bg-linear-to-br from-background via-background to-muted/30 flex items-center justify-center px-3 sm:px-4 py-6 sm:py-12">
 			<div className="max-w-md w-full">
-				<div className="text-center mb-8">
-					<div className="flex items-center justify-center mb-4">
-						<Shield className="w-10 h-10 text-primary" />
+				<div className="text-center mb-6 sm:mb-8">
+					<div className="flex items-center justify-center mb-3 sm:mb-4">
+						<Shield className="w-8 h-8 sm:w-10 sm:h-10 text-primary" />
 					</div>
-					<h1 className="text-3xl font-bold text-foreground mb-2">Login</h1>
-					<p className="text-sm text-muted-foreground">
+					<h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Login</h1>
+					<p className="text-xs sm:text-sm text-muted-foreground">
 						Akses dashboard sesuai dengan peran Anda
 					</p>
 				</div>

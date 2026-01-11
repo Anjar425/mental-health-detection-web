@@ -594,80 +594,81 @@ export default function UserDashboardPage() {
         <main className="min-h-screen bg-background pb-10">
             {/* Header */}
             <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur-sm">
-                <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-foreground">Dashboard Saya</h1>
-                        <p className="text-sm text-muted-foreground">Login sebagai: {userEmail}</p>
+                <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
+                    <div className="min-w-0 flex-1">
+                        <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">Dashboard Saya</h1>
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">Login sebagai: {userEmail}</p>
                     </div>
                     <Button 
                         variant="outline" size="sm" onClick={handleLogout} 
-                        className="gap-2 bg-transparent hover:bg-muted"
+                        className="gap-1 sm:gap-2 bg-transparent hover:bg-muted text-xs sm:text-sm shrink-0"
                     >
-                        <LogOut className="w-4 h-4" /> Keluar
+                        <LogOut className="w-3 h-3 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Keluar</span>
                     </Button>
                 </div>
             </header>
 
-            <div className="max-w-7xl mx-auto px-4 py-8">
-                <Tabs defaultValue="overview" className="w-full space-y-6">
-                    <TabsList className="grid w-full grid-cols-1 gap-2 rounded-xl border border-border/50 bg-muted/40 p-1 sm:grid-cols-2">
-                        <TabsTrigger value="overview" className="w-full rounded-lg text-sm font-semibold data-[state=active]:bg-background data-[state=active]:text-primary">
+            <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+                <Tabs defaultValue="overview" className="w-full space-y-4 sm:space-y-6">
+                    <TabsList className="grid w-full grid-cols-2 gap-1 sm:gap-2 rounded-xl border border-border/50 bg-muted/40 p-1">
+                        <TabsTrigger value="overview" className="w-full rounded-lg text-xs sm:text-sm font-semibold data-[state=active]:bg-background data-[state=active]:text-primary">
                             Ringkasan
                         </TabsTrigger>
-                        <TabsTrigger value="insights" className="w-full rounded-lg text-sm font-semibold data-[state=active]:bg-background data-[state=active]:text-primary">
-                            Visualisasi Histori
+                        <TabsTrigger value="insights" className="w-full rounded-lg text-xs sm:text-sm font-semibold data-[state=active]:bg-background data-[state=active]:text-primary">
+                            <span className="hidden sm:inline">Visualisasi Histori</span>
+                            <span className="sm:hidden">Histori</span>
                         </TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="overview" className="space-y-8">
+                    <TabsContent value="overview" className="space-y-6 sm:space-y-8">
                         {/* Section 1: Pilihan Tes */}
                         <section>
-                            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                                <Activity className="w-5 h-5 text-primary" /> Mulai Deteksi Baru
+                            <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center gap-2">
+                                <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary" /> Mulai Deteksi Baru
                             </h2>
-                            <div className="grid gap-6 md:grid-cols-2">
+                            <div className="grid gap-3 sm:gap-6 grid-cols-2 md:grid-cols-2">
                                 {/* Card DASS-21 */}
                                 <Card className="hover:shadow-lg transition-all border-l-4 border-l-blue-500 bg-linear-to-br from-background to-blue-50/20">
-                                    <CardHeader>
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <CardTitle className="text-lg text-blue-700">DASS-21 (Cepat)</CardTitle>
-                                                <CardDescription className="mt-1">Skrining ringkas 21 pertanyaan</CardDescription>
+                                    <CardHeader className="p-4 sm:p-6">
+                                        <div className="flex justify-between items-start gap-2">
+                                            <div className="min-w-0">
+                                                <CardTitle className="text-base sm:text-lg text-blue-700">DASS-21 (Cepat)</CardTitle>
+                                                <CardDescription className="mt-1 text-xs sm:text-sm">Skrining ringkas 21 pertanyaan</CardDescription>
                                             </div>
-                                            <Badge variant="secondary" className="bg-blue-100 text-blue-700">Populer</Badge>
+                                            <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs shrink-0">Populer</Badge>
                                         </div>
                                     </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-muted-foreground">
+                                    <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                                        <p className="text-xs sm:text-sm text-muted-foreground">
                                             Cocok untuk pemeriksaan rutin. Mengukur tingkat stres, kecemasan, dan depresi dalam waktu singkat (~3 menit).
                                         </p>
                                     </CardContent>
-                                    <CardFooter>
-                                        <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={handleStartDass21} disabled={loadingGroups}>
-                                            {loadingGroups ? "Memuat Grup..." : "Mulai DASS-21"} <ArrowRight className="ml-2 h-4 w-4" />
+                                    <CardFooter className="p-4 sm:p-6 pt-0 sm:pt-0">
+                                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm" onClick={handleStartDass21} disabled={loadingGroups}>
+                                            {loadingGroups ? "Memuat Grup..." : "Mulai DASS-21"} <ArrowRight className="ml-2 h-3 w-3 sm:h-4 sm:w-4" />
                                         </Button>
                                     </CardFooter>
                                 </Card>
 
                                 {/* Card DASS-42 */}
                                 <Card className="hover:shadow-lg transition-all border-l-4 border-l-purple-500 bg-linear-to-br from-background to-purple-50/20">
-                                    <CardHeader>
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <CardTitle className="text-lg text-purple-700">DASS-42 (Lengkap)</CardTitle>
-                                                <CardDescription className="mt-1">Analisis mendalam 42 pertanyaan</CardDescription>
+                                    <CardHeader className="p-4 sm:p-6">
+                                        <div className="flex justify-between items-start gap-2">
+                                            <div className="min-w-0">
+                                                <CardTitle className="text-base sm:text-lg text-purple-700">DASS-42 (Lengkap)</CardTitle>
+                                                <CardDescription className="mt-1 text-xs sm:text-sm">Analisis mendalam 42 pertanyaan</CardDescription>
                                             </div>
-                                            <Badge variant="secondary" className="bg-purple-100 text-purple-700">Detail</Badge>
+                                            <Badge variant="secondary" className="bg-purple-100 text-purple-700 text-xs shrink-0">Detail</Badge>
                                         </div>
                                     </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-muted-foreground">
+                                    <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                                        <p className="text-xs sm:text-sm text-muted-foreground">
                                             Memberikan gambaran klinis yang lebih komprehensif. Direkomendasikan jika Anda memiliki keluhan spesifik (~7 menit).
                                         </p>
                                     </CardContent>
-                                    <CardFooter>
-                                        <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => router.push("/detection/dass42")}>
-                                            Mulai DASS-42 <ArrowRight className="ml-2 h-4 w-4" />
+                                    <CardFooter className="p-4 sm:p-6 pt-0 sm:pt-0">
+                                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm" onClick={() => router.push("/detection/dass42")}>
+                                            Mulai DASS-42 <ArrowRight className="ml-2 h-3 w-3 sm:h-4 sm:w-4" />
                                         </Button>
                                     </CardFooter>
                                 </Card>
@@ -676,24 +677,24 @@ export default function UserDashboardPage() {
 
                         {/* Section 2: Riwayat Deteksi */}
                         <Card className="border-border/50 shadow-sm">
-                            <CardHeader>
+                            <CardHeader className="p-4 sm:p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <CardTitle className="flex items-center gap-2">
-                                            <Calendar className="w-5 h-5 text-primary" />
+                                        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                                            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                                             Riwayat Hasil
                                         </CardTitle>
-                                        <CardDescription className="mt-1">
+                                        <CardDescription className="mt-1 text-xs sm:text-sm">
                                             Total: {historyRecords.length} kali deteksi
                                         </CardDescription>
                                     </div>
-                                    <Badge variant="outline" className="hidden sm:flex">
+                                    <Badge variant="outline" className="hidden sm:flex text-xs">
                                         <TrendingUp className="w-3 h-3 mr-1" /> Data Terbaru
                                     </Badge>
                                 </div>
                             </CardHeader>
 
-                            <CardContent>
+                            <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
                                 {historyRecords.length === 0 ? (
                                     <div className="text-center py-12 rounded-lg border border-dashed border-border/50 bg-muted/20">
                                         <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
@@ -706,17 +707,18 @@ export default function UserDashboardPage() {
                                     </div>
                                 ) : (
                                     <>
+                                        {/* Table (visible on all sizes; horizontal scroll on narrow screens) */}
                                         <div className="overflow-x-auto rounded-md border">
                                             <table className="w-full text-sm text-left">
                                                 <thead className="bg-muted/40 text-muted-foreground uppercase text-xs">
                                                     <tr>
-                                                        <th className="px-6 py-3">Tanggal</th>
-                                                        <th className="px-6 py-3">Tipe</th>
-                                                        <th className="px-6 py-3">Grup Pakar</th>
-                                                        <th className="px-6 py-3">Dominan</th>
-                                                        <th className="px-6 py-3 text-center">Skor (D / A / S)</th>
+                                                        <th className="px-4 lg:px-6 py-3">Tanggal</th>
+                                                        <th className="px-4 lg:px-6 py-3">Tipe</th>
+                                                        <th className="px-4 lg:px-6 py-3">Grup Pakar</th>
+                                                        <th className="px-4 lg:px-6 py-3">Dominan</th>
+                                                        <th className="px-4 lg:px-6 py-3 text-center">Skor (D / A / S)</th>
                                                         {/* <th className="px-6 py-3">Status / Severity</th> */}
-                                                        <th className="px-6 py-3 text-center">Aksi</th>
+                                                        <th className="px-4 lg:px-6 py-3 text-center">Aksi</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-border/50">
@@ -802,24 +804,24 @@ export default function UserDashboardPage() {
 
                                         {/* Pagination Controls */}
                                         {historyRecords.length > itemsPerPage && (
-                                            <div className="flex items-center justify-between mt-4">
-                                                <p className="text-sm text-muted-foreground">
+                                            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
+                                                <p className="text-xs sm:text-sm text-muted-foreground">
                                                     Halaman {currentPage} dari {totalPages}
                                                 </p>
-                                                <div className="flex gap-2">
+                                                <div className="flex gap-2 w-full sm:w-auto">
                                                     <Button 
                                                         variant="outline" size="sm" 
                                                         onClick={prevPage} disabled={currentPage === 1}
-                                                        className="gap-1"
+                                                        className="gap-1 flex-1 sm:flex-none text-xs sm:text-sm"
                                                     >
-                                                        <ChevronLeft className="w-4 h-4" /> Prev
+                                                        <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" /> Prev
                                                     </Button>
                                                     <Button 
                                                         variant="outline" size="sm" 
                                                         onClick={nextPage} disabled={currentPage === totalPages}
-                                                        className="gap-1"
+                                                        className="gap-1 flex-1 sm:flex-none text-xs sm:text-sm"
                                                     >
-                                                        Next <ChevronRight className="w-4 h-4" />
+                                                        Next <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
                                                     </Button>
                                                 </div>
                                             </div>
@@ -1090,19 +1092,19 @@ export default function UserDashboardPage() {
 
             {/* Modal Pilih Grup */}
             {showGroupModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-                    <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden animate-in fade-in zoom-in-95">
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
-                            <div>
-                                <h2 className="text-xl font-bold flex items-center gap-2">
-                                    <Activity className="w-5 h-5 text-primary" /> Pilih Grup Pakar
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2 sm:px-4">
+                    <div className="bg-card border border-border rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] sm:max-h-[80vh] overflow-hidden animate-in fade-in zoom-in-95">
+                        <div className="flex items-start sm:items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border bg-muted/30">
+                            <div className="flex-1 min-w-0">
+                                <h2 className="text-base sm:text-xl font-bold flex items-center gap-2">
+                                    <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" /> Pilih Grup Pakar
                                 </h2>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-xs text-muted-foreground line-clamp-2">
                                     Pilih grup pakar yang akan digunakan untuk interpretasi hasil DASS-21 Anda.
                                 </p>
                             </div>
                             <button
-                                className="text-muted-foreground hover:text-destructive"
+                                className="text-muted-foreground hover:text-destructive shrink-0 ml-2 p-1"
                                 onClick={() => setShowGroupModal(false)}
                                 aria-label="Tutup"
                             >
@@ -1110,7 +1112,7 @@ export default function UserDashboardPage() {
                             </button>
                         </div>
 
-                        <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(80vh-4rem)]">
+                        <div className="p-3 sm:p-6 space-y-4 overflow-y-auto max-h-[calc(90vh-4rem)] sm:max-h-[calc(80vh-4rem)]">
                             {groups.length === 0 ? (
                                 <div className="text-center py-12 rounded-lg border border-dashed border-border/50 bg-muted/20">
                                     <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -1193,17 +1195,17 @@ export default function UserDashboardPage() {
 
             {/* Modal Detail Grup (Anonymized) */}
             {showGroupDetailModal && selectedGroupDetail && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-                    <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-xl w-full max-h-[80vh] overflow-hidden animate-in fade-in zoom-in-95">
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
-                            <div>
-                                <h2 className="text-xl font-bold flex items-center gap-2">
-                                    <Info className="w-5 h-5 text-primary" /> Detail Grup
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2 sm:px-4">
+                    <div className="bg-card border border-border rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] sm:max-h-[80vh] overflow-hidden animate-in fade-in zoom-in-95">
+                        <div className="flex items-start sm:items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border bg-muted/30">
+                            <div className="flex-1 min-w-0">
+                                <h2 className="text-base sm:text-xl font-bold flex items-center gap-2">
+                                    <Info className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" /> Detail Grup
                                 </h2>
                                 <p className="text-xs text-muted-foreground">Rangkuman singkat dan data pakar (anonim).</p>
                             </div>
                             <button
-                                className="text-muted-foreground hover:text-destructive"
+                                className="text-muted-foreground hover:text-destructive shrink-0 ml-2 p-1"
                                 onClick={() => setShowGroupDetailModal(false)}
                                 aria-label="Tutup"
                             >
@@ -1211,7 +1213,7 @@ export default function UserDashboardPage() {
                             </button>
                         </div>
 
-                        <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(80vh-4rem)]">
+                        <div className="p-4 sm:p-6 space-y-4 overflow-y-auto max-h-[calc(90vh-4rem)] sm:max-h-[calc(80vh-4rem)]">
                             <div className="space-y-1">
                                 <h3 className="text-lg font-semibold text-foreground">{selectedGroupDetail.name}</h3>
                                 <p className="text-sm text-muted-foreground">
@@ -1242,12 +1244,12 @@ export default function UserDashboardPage() {
                                 <AnonymizedSummaryFromSummary summary={groupDetailData} />
                             )}
 
-                            <div className="flex items-center justify-end gap-3 pt-2">
-                                <Button variant="outline" onClick={() => setShowGroupDetailModal(false)}>
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-2">
+                                <Button variant="outline" onClick={() => setShowGroupDetailModal(false)} className="order-2 sm:order-1">
                                     Tutup
                                 </Button>
                                 <Button
-                                    className="bg-blue-600 hover:bg-blue-700"
+                                    className="bg-blue-600 hover:bg-blue-700 order-1 sm:order-2"
                                     onClick={() => {
                                         setShowGroupDetailModal(false)
                                         setShowGroupModal(false)

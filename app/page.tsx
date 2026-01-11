@@ -65,13 +65,13 @@ export default function HomePage() {
 				</section>
 
 				{/* Footer */}
-				<footer className="border-t border-border/40 py-8 px-4 mt-12">
+				<footer className="border-t border-border/40 py-6 sm:py-8 px-4 mt-8 sm:mt-12">
 					<div className="max-w-2xl mx-auto">
-						<div className="text-center text-sm text-muted-foreground">
+						<div className="text-center text-xs sm:text-sm text-muted-foreground">
 							<p className="mb-2">MindCare - Platform Deteksi Kesehatan Mental</p>
-							<p className="text-xs">© 2025 MindCare. Sistem pakar berbasis DASS-21 dan DASS-42.</p>
+							<p className="text-[10px] sm:text-xs">© 2025 MindCare. Sistem pakar berbasis DASS-21 dan DASS-42.</p>
 						</div>
-						<div className="flex justify-center gap-6 mt-4 text-xs text-muted-foreground">
+						<div className="flex justify-center gap-4 sm:gap-6 mt-3 sm:mt-4 text-[10px] sm:text-xs text-muted-foreground">
 							<a href="#" className="hover:text-primary transition-colors">
 								Privacy
 							</a>

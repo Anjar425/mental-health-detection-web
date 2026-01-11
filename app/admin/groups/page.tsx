@@ -124,14 +124,14 @@ export default function GroupsPage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       <AdminNav />
 
-      <main className="flex-1 container mx-auto p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <main className="flex-1 container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Expert Groups</h2>
-            <p className="text-sm text-muted-foreground">Manage expert groups and their members.</p>
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Expert Groups</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground">Manage expert groups and their members.</p>
           </div>
           <button
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground font-medium shadow hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground font-medium shadow hover:bg-primary/90 transition-colors text-sm w-full sm:w-auto"
             onClick={() => setModalOpen(true)}
           >
             <Plus className="w-4 h-4" /> Create New Group
@@ -144,28 +144,28 @@ export default function GroupsPage() {
               <Loader2 className="inline mr-2 animate-spin" /> Loading groups...
             </div>
           ) : errorMessage ? (
-            <div className="p-8 text-center text-destructive">
+            <div className="p-6 sm:p-8 text-center text-destructive">
               <div className="font-semibold">Network error</div>
-              <div className="text-sm text-muted-foreground">{errorMessage}</div>
-              <div className="text-sm text-muted-foreground mt-2">Check backend, CORS, and auth token. See DevTools Network.</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">{errorMessage}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground mt-2">Check backend, CORS, and auth token. See DevTools Network.</div>
             </div>
           ) : groups.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground italic">
               No expert groups found.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-border">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border">
               {groups.map((group) => (
                 <div
                   key={group.id}
-                  className="p-6 bg-card hover:bg-muted/40 cursor-pointer transition-colors border-b border-r border-border flex flex-col gap-2"
+                  className="p-4 sm:p-6 bg-card hover:bg-muted/40 cursor-pointer transition-colors border-b border-r border-border flex flex-col gap-2"
                   onClick={() => handleOpenGroup(group)}
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <Users className="w-5 h-5 text-primary" />
-                    <span className="font-semibold text-lg">{group.name}</span>
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
+                    <span className="font-semibold text-base sm:text-lg truncate">{group.name}</span>
                   </div>
-                  <div className="text-sm text-muted-foreground mb-2 line-clamp-2">{group.description}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground mb-2 line-clamp-2">{group.description}</div>
                   <div className="flex items-center gap-2 mt-auto">
                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-primary/10 text-primary text-xs font-semibold">
                       {group.member_count ?? 0} Members
