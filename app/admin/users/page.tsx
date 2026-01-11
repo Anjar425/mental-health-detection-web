@@ -91,14 +91,14 @@ export default function UsersPage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       <AdminNav />
 
-      <main className="flex-1 container mx-auto p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <main className="flex-1 container mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="flex flex-col gap-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Registered Users</h2>
-            <p className="text-sm text-muted-foreground">Manage regular user accounts.</p>
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Registered Users</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground">Manage regular user accounts.</p>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
             <input
               className="flex h-9 w-full sm:w-64 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
               placeholder="Search users..."
@@ -106,7 +106,7 @@ export default function UsersPage() {
               onChange={(e) => setQuery(e.target.value)}
             />
             <button
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
+              className="inline-flex items-center justify-center rounded-md text-xs sm:text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-3 sm:px-4 py-2 w-full sm:w-auto"
               onClick={() => {
                 const emails = filtered.map((u) => u.email).join(",")
                 navigator.clipboard.writeText(emails)
@@ -225,20 +225,20 @@ export default function UsersPage() {
               </div>
 
               {/* Pagination Controls */}
-              <div className="p-4 border-t border-border flex items-center justify-between bg-muted/20">
-                <div className="text-sm text-muted-foreground">
+              <div className="p-3 sm:p-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 bg-muted/20">
+                <div className="text-xs sm:text-sm text-muted-foreground">
                   Page {page} of {totalPages}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full sm:w-auto">
                   <button 
-                    className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3" 
+                    className="inline-flex items-center justify-center rounded-md text-xs sm:text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3 flex-1 sm:flex-none" 
                     onClick={() => setPage((p) => Math.max(1, p - 1))} 
                     disabled={page === 1}
                   >
                     Prev
                   </button>
                   <button 
-                    className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3" 
+                    className="inline-flex items-center justify-center rounded-md text-xs sm:text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 px-3 flex-1 sm:flex-none" 
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))} 
                     disabled={page === totalPages}
                   >

@@ -216,16 +216,16 @@ export function DassQuestionnaire() {
     }
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-background via-accent/5 to-background p-4">
+        <div className="min-h-screen bg-linear-to-br from-background via-accent/5 to-background p-2 sm:p-4">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
-                <div className="text-center mb-8 pt-8">
-                    <h1 className="text-4xl font-bold text-foreground mb-4 text-balance">Kuisioner DASS-42</h1>
-                    <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
+                <div className="text-center mb-4 sm:mb-8 pt-4 sm:pt-8">
+                    <h1 className="text-xl sm:text-2xl md:text-4xl font-bold text-foreground mb-2 sm:mb-4 text-balance">Kuisioner DASS-42</h1>
+                    <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto text-pretty px-2">
                         Skala Depresi, Kecemasan, dan Stres - 42 Item untuk evaluasi kesehatan mental
                     </p>
-                    <div className="flex items-center justify-center gap-4 mt-6">
-                        <Badge variant="secondary" className="text-sm">
+                    <div className="flex items-center justify-center gap-2 sm:gap-4 mt-3 sm:mt-6">
+                        <Badge variant="secondary" className="text-xs sm:text-sm">
                             Pertanyaan {currentQuestion + 1} dari {dassQuestions.length}
                         </Badge>
                         {/* <Badge
@@ -248,12 +248,12 @@ export function DassQuestionnaire() {
                 </div>
 
                 {/* Progress Bar */}
-                <div className="mb-8">
-                    <div className="flex justify-between text-sm text-muted-foreground mb-2">
+                <div className="mb-4 sm:mb-8 px-1">
+                    <div className="flex justify-between text-xs sm:text-sm text-muted-foreground mb-2">
                         <span>Progress</span>
                         <span>{Math.round(progress)}%</span>
                     </div>
-                    <Progress value={progress} className="h-2" />
+                    <Progress value={progress} className="h-1.5 sm:h-2" />
                 </div>
 
                 <QuestionCard
@@ -266,52 +266,52 @@ export function DassQuestionnaire() {
                 />
 
                 {/* Navigation */}
-                <div className="flex justify-between items-center mt-8">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0 mt-4 sm:mt-8">
                     <Button
                         variant="outline"
                         onClick={handlePrevious}
                         disabled={currentQuestion === 0}
-                        className="px-6 bg-transparent"
+                        className="px-4 sm:px-6 bg-transparent text-xs sm:text-sm w-full sm:w-auto order-2 sm:order-1"
                     >
                         Sebelumnya
                     </Button>
 
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-xs sm:text-sm text-muted-foreground order-1 sm:order-2">
                         {Object.keys(responses).length} dari {dassQuestions.length} pertanyaan dijawab
                     </div>
 
-                    <Button onClick={handleNext} disabled={currentResponse === undefined} className="px-6">
+                    <Button onClick={handleNext} disabled={currentResponse === undefined} className="px-4 sm:px-6 text-xs sm:text-sm w-full sm:w-auto order-3">
                         {currentQuestion === dassQuestions.length - 1 ? "Selesai" : "Selanjutnya"}
                     </Button>
                 </div>
 
                 {/* Instructions */}
-                <Card className="mt-8 border-accent/20">
-                    <CardHeader>
-                        <CardTitle className="text-lg">Petunjuk Pengisian</CardTitle>
+                <Card className="mt-4 sm:mt-8 border-accent/20">
+                    <CardHeader className="pb-2 sm:pb-4">
+                        <CardTitle className="text-sm sm:text-lg">Petunjuk Pengisian</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-muted-foreground text-pretty">
+                        <p className="text-muted-foreground text-xs sm:text-sm md:text-base text-pretty">
                             Silakan baca setiap pernyataan dan gunakan slider untuk memilih nilai antara 0.0 hingga 3.0 yang
                             menunjukkan seberapa sering Anda mengalami kondisi tersebut <strong>selama seminggu terakhir</strong>.
                             Anda dapat memilih nilai desimal seperti 1.5, 2.3, dll. untuk tingkat yang lebih spesifik.
                         </p>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                            <div className="text-center p-3 bg-muted/50 rounded-lg">
-                                <div className="font-semibold text-lg">0.0</div>
-                                <div className="text-sm text-muted-foreground">Tidak pernah</div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mt-3 sm:mt-4">
+                            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-lg">
+                                <div className="font-semibold text-sm sm:text-lg">0.0</div>
+                                <div className="text-xs sm:text-sm text-muted-foreground">Tidak pernah</div>
                             </div>
-                            <div className="text-center p-3 bg-muted/50 rounded-lg">
-                                <div className="font-semibold text-lg">1.0</div>
-                                <div className="text-sm text-muted-foreground">Kadang-kadang</div>
+                            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-lg">
+                                <div className="font-semibold text-sm sm:text-lg">1.0</div>
+                                <div className="text-xs sm:text-sm text-muted-foreground">Kadang-kadang</div>
                             </div>
-                            <div className="text-center p-3 bg-muted/50 rounded-lg">
-                                <div className="font-semibold text-lg">2.0</div>
-                                <div className="text-sm text-muted-foreground">Sering</div>
+                            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-lg">
+                                <div className="font-semibold text-sm sm:text-lg">2.0</div>
+                                <div className="text-xs sm:text-sm text-muted-foreground">Sering</div>
                             </div>
-                            <div className="text-center p-3 bg-muted/50 rounded-lg">
-                                <div className="font-semibold text-lg">3.0</div>
-                                <div className="text-sm text-muted-foreground">Hampir selalu</div>
+                            <div className="text-center p-2 sm:p-3 bg-muted/50 rounded-lg">
+                                <div className="font-semibold text-sm sm:text-lg">3.0</div>
+                                <div className="text-xs sm:text-sm text-muted-foreground">Hampir selalu</div>
                             </div>
                         </div>
                     </CardContent>

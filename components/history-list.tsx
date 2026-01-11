@@ -74,10 +74,10 @@ const getDominantColor = (dominant: string): string => {
 export function HistoryList({ records, type }: HistoryListProps) {
 	if (records.length === 0) {
 		return (
-			<div className="text-center py-12 rounded-lg border border-border/40 bg-muted/20">
-				<Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
-				<p className="text-muted-foreground mb-4">Belum ada riwayat deteksi</p>
-				<p className="text-xs text-muted-foreground">
+			<div className="text-center py-8 sm:py-12 rounded-lg border border-border/40 bg-muted/20">
+				<Calendar className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-2 sm:mb-3 opacity-50" />
+				<p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">Belum ada riwayat deteksi</p>
+				<p className="text-[10px] sm:text-xs text-muted-foreground">
 					Mulai deteksi baru untuk melihat riwayat di sini
 				</p>
 			</div>
@@ -86,7 +86,7 @@ export function HistoryList({ records, type }: HistoryListProps) {
 
 	if (type === "dass21") {
 		return (
-			<div className="space-y-3">
+			<div className="space-y-2 sm:space-y-3">
 				{records.map((record) => {
 					const das21Record = record as DASS21Record
 					return (
@@ -94,36 +94,36 @@ export function HistoryList({ records, type }: HistoryListProps) {
 							key={record.id}
 							className={`border-border/40 hover:border-border/60 transition-colors ${getDominantColor(record.dominant)}`}
 						>
-							<CardHeader className="pb-3">
-								<div className="flex items-start justify-between">
+							<CardHeader className="p-3 sm:pb-3">
+								<div className="flex items-start justify-between gap-2">
 									<div className="flex items-center gap-2">
-										<Calendar className="w-4 h-4 text-muted-foreground" />
-										<div>
-											<p className="text-sm font-medium text-foreground">{record.date}</p>
-											<p className="text-xs text-muted-foreground">{record.timestamp}</p>
+										<Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground shrink-0" />
+										<div className="min-w-0">
+											<p className="text-xs sm:text-sm font-medium text-foreground">{record.date}</p>
+											<p className="text-[10px] sm:text-xs text-muted-foreground">{record.timestamp}</p>
 										</div>
 									</div>
-									<Badge variant="secondary">{record.dominant}</Badge>
+									<Badge variant="secondary" className="text-[10px] sm:text-xs shrink-0">{record.dominant}</Badge>
 								</div>
 							</CardHeader>
-							<CardContent className="space-y-3">
+							<CardContent className="p-3 pt-0 space-y-2 sm:space-y-3">
 								{/* Scores Grid */}
-								<div className="grid grid-cols-3 gap-2">
-									<div className="p-2 rounded border border-border/40 text-center">
-										<p className="text-xs text-muted-foreground mb-1">Depresi</p>
-										<p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+								<div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+									<div className="p-1.5 sm:p-2 rounded border border-border/40 text-center">
+										<p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Depresi</p>
+										<p className="text-sm sm:text-lg font-bold text-blue-600 dark:text-blue-400">
 											{das21Record.depression}%
 										</p>
 									</div>
-									<div className="p-2 rounded border border-border/40 text-center">
-										<p className="text-xs text-muted-foreground mb-1">Ansietas</p>
-										<p className="text-lg font-bold text-purple-600 dark:text-purple-400">
+									<div className="p-1.5 sm:p-2 rounded border border-border/40 text-center">
+										<p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Ansietas</p>
+										<p className="text-sm sm:text-lg font-bold text-purple-600 dark:text-purple-400">
 											{das21Record.anxiety}%
 										</p>
 									</div>
-									<div className="p-2 rounded border border-border/40 text-center">
-										<p className="text-xs text-muted-foreground mb-1">Stres</p>
-										<p className="text-lg font-bold text-amber-600 dark:text-amber-400">
+									<div className="p-1.5 sm:p-2 rounded border border-border/40 text-center">
+										<p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Stres</p>
+										<p className="text-sm sm:text-lg font-bold text-amber-600 dark:text-amber-400">
 											{das21Record.stress}%
 										</p>
 									</div>
@@ -131,7 +131,7 @@ export function HistoryList({ records, type }: HistoryListProps) {
 
 								{/* Notes */}
 								{record.notes && (
-									<div className="bg-muted/50 p-2 rounded text-xs text-muted-foreground border-l-2 border-l-primary">
+									<div className="bg-muted/50 p-1.5 sm:p-2 rounded text-[10px] sm:text-xs text-muted-foreground border-l-2 border-l-primary">
 										<span className="font-medium">Catatan:</span> {record.notes}
 									</div>
 								)}
@@ -146,14 +146,15 @@ export function HistoryList({ records, type }: HistoryListProps) {
 	// DASS-42 Table View
 	return (
 		<div className="rounded-lg border border-border/40 overflow-hidden">
-			<Table>
-				<TableHeader className="bg-muted/50">
+			<div className="overflow-x-auto">
+				<Table className="min-w-full">
+					<TableHeader className="bg-muted/50">
 					<TableRow>
-						<TableHead className="text-xs">Tanggal</TableHead>
-						<TableHead className="text-xs">Depresi</TableHead>
-						<TableHead className="text-xs">Ansietas</TableHead>
-						<TableHead className="text-xs">Stres</TableHead>
-						<TableHead className="text-xs">Dominan</TableHead>
+						<TableHead className="text-[10px] sm:text-xs whitespace-nowrap">Tanggal</TableHead>
+						<TableHead className="text-[10px] sm:text-xs whitespace-nowrap">Depresi</TableHead>
+						<TableHead className="text-[10px] sm:text-xs whitespace-nowrap">Ansietas</TableHead>
+						<TableHead className="text-[10px] sm:text-xs whitespace-nowrap">Stres</TableHead>
+						<TableHead className="text-[10px] sm:text-xs whitespace-nowrap">Dominan</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
@@ -164,61 +165,62 @@ export function HistoryList({ records, type }: HistoryListProps) {
 								key={record.id}
 								className={`hover:bg-muted/50 transition-colors ${getDominantColor(record.dominant)}`}
 							>
-								<TableCell className="text-xs">
+								<TableCell className="text-[10px] sm:text-xs p-2 sm:p-4">
 									<div>
 										<p className="font-medium">{record.date}</p>
-										<p className="text-muted-foreground text-xs">{record.timestamp}</p>
+										<p className="text-muted-foreground text-[10px] sm:text-xs">{record.timestamp}</p>
 									</div>
 								</TableCell>
-								<TableCell className="text-xs">
+								<TableCell className="text-[10px] sm:text-xs p-2 sm:p-4">
 									<div className="space-y-1">
 										<p className="font-medium">{dass42Record.depression.score}</p>
 										<Badge
 											variant="secondary"
-											className={`text-xs ${getSeverityColor(dass42Record.depression.level)}`}
+											className={`text-[10px] sm:text-xs ${getSeverityColor(dass42Record.depression.level)}`}
 										>
 											{dass42Record.depression.level}
 										</Badge>
 									</div>
 								</TableCell>
-								<TableCell className="text-xs">
+								<TableCell className="text-[10px] sm:text-xs p-2 sm:p-4">
 									<div className="space-y-1">
 										<p className="font-medium">{dass42Record.anxiety.score}</p>
 										<Badge
 											variant="secondary"
-											className={`text-xs ${getSeverityColor(dass42Record.anxiety.level)}`}
+											className={`text-[10px] sm:text-xs ${getSeverityColor(dass42Record.anxiety.level)}`}
 										>
 											{dass42Record.anxiety.level}
 										</Badge>
 									</div>
 								</TableCell>
-								<TableCell className="text-xs">
+								<TableCell className="text-[10px] sm:text-xs p-2 sm:p-4">
 									<div className="space-y-1">
 										<p className="font-medium">{dass42Record.stress.score}</p>
 										<Badge
 											variant="secondary"
-											className={`text-xs ${getSeverityColor(dass42Record.stress.level)}`}
+											className={`text-[10px] sm:text-xs ${getSeverityColor(dass42Record.stress.level)}`}
 										>
 											{dass42Record.stress.level}
 										</Badge>
 									</div>
 								</TableCell>
-								<TableCell className="text-xs">
-									<Badge variant="outline">{record.dominant}</Badge>
+								<TableCell className="text-[10px] sm:text-xs p-2 sm:p-4">
+									<Badge variant="outline" className="text-[10px] sm:text-xs">{record.dominant}</Badge>
 								</TableCell>
 							</TableRow>
 						)
 					})}
 				</TableBody>
 			</Table>
+			</div>
 
 			{/* Notes Section */}
 			{records.some((r) => r.notes) && (
-				<div className="p-3 border-t border-border/40 bg-muted/20 space-y-2">
+				<div className="p-2 sm:p-3 border-t border-border/40 bg-muted/20 space-y-1.5 sm:space-y-2">
 					{records
 						.filter((r) => r.notes)
 						.map((record) => (
-							<div key={record.id} className="text-xs text-muted-foreground border-l-2 border-l-primary pl-2">
+							<div key={record.id} className="text-[10px] sm:text-xs text-muted-foreground border-l-2 border-l-primary pl-2">
 								<span className="font-medium">{record.date}:</span> {record.notes}
 							</div>
 						))}

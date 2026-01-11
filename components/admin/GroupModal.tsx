@@ -72,58 +72,58 @@ export function GroupDetailModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="bg-card rounded-lg shadow-lg max-w-lg w-full p-6 border border-border relative animate-in fade-in-0 zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-2 sm:p-4">
+      <div className="bg-card rounded-lg shadow-lg w-full max-w-lg p-4 sm:p-6 border border-border relative animate-in fade-in-0 zoom-in-95 duration-200 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
         <button
-          className="absolute top-3 right-3 text-muted-foreground hover:text-destructive"
+          className="absolute top-2 sm:top-3 right-2 sm:right-3 text-muted-foreground hover:text-destructive p-1"
           onClick={onClose}
           aria-label="Close"
         >
           ×
         </button>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold flex items-center gap-2">
-            <Plus className="w-5 h-5 text-primary" />
-            Edit Group: {group.name}
+        <div className="flex items-start sm:items-center justify-between mb-4 pr-6">
+          <h3 className="text-base sm:text-xl font-bold flex items-center gap-2">
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
+            <span className="truncate">Edit Group: {group.name}</span>
           </h3>
         </div>
 
-        <div className="space-y-4 mb-4">
+        <div className="space-y-3 sm:space-y-4 mb-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Group Name</label>
+            <label className="block text-xs sm:text-sm font-medium mb-1">Group Name</label>
             <input
-              className="w-full border border-border rounded px-3 py-2 bg-background"
+              className="w-full border border-border rounded px-3 py-2 bg-background text-sm"
               value={editName}
               onChange={e => setEditName(e.target.value)}
               disabled={loading}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Description</label>
+            <label className="block text-xs sm:text-sm font-medium mb-1">Description</label>
             <textarea
-              className="w-full border border-border rounded px-3 py-2 bg-background min-h-[60px]"
+              className="w-full border border-border rounded px-3 py-2 bg-background min-h-[60px] text-sm"
               value={editDescription}
               onChange={e => setEditDescription(e.target.value)}
               disabled={loading}
             />
           </div>
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
             <button
-              className="px-4 py-2 rounded bg-muted text-foreground hover:bg-muted/80"
+              className="px-3 sm:px-4 py-2 rounded bg-muted text-foreground hover:bg-muted/80 text-xs sm:text-sm"
               onClick={handleCancelEdit}
               disabled={loading}
             >
               Cancel
             </button>
             <button
-              className="px-4 py-2 rounded bg-destructive text-destructive-foreground font-medium hover:bg-destructive/90 mr-auto"
+              className="px-3 sm:px-4 py-2 rounded bg-destructive text-destructive-foreground font-medium hover:bg-destructive/90 sm:mr-auto text-xs sm:text-sm order-first sm:order-none w-full sm:w-auto mb-2 sm:mb-0"
               onClick={() => setConfirmOpen(true)}
               disabled={loading}
             >
               Delete Group
             </button>
             <button
-              className="px-4 py-2 rounded bg-primary text-primary-foreground font-medium hover:bg-primary/90"
+              className="px-3 sm:px-4 py-2 rounded bg-primary text-primary-foreground font-medium hover:bg-primary/90 text-xs sm:text-sm"
               onClick={handleSaveEdit}
               disabled={loading}
             >
@@ -133,22 +133,22 @@ export function GroupDetailModal({
         </div>
 
         <div className="mb-4">
-          <div className="font-semibold mb-2 flex items-center gap-2">
+          <div className="font-semibold mb-2 flex items-center gap-2 text-sm sm:text-base">
             Members <span className="text-xs text-muted-foreground">({group.members.length})</span>
           </div>
           {group.members.length === 0 ? (
-            <div className="text-muted-foreground text-sm">No members in this group.</div>
+            <div className="text-muted-foreground text-xs sm:text-sm">No members in this group.</div>
           ) : (
             <ul className="divide-y divide-border mb-2">
               {group.members.map((member: User) => (
-                <li key={member.id} className="flex items-center justify-between py-2">
-                  <span className="font-mono text-xs">{member.username} <span className="text-muted-foreground">({member.email})</span></span>
+                <li key={member.id} className="flex flex-col sm:flex-row sm:items-center justify-between py-2 gap-2">
+                  <span className="font-mono text-xs truncate">{member.username} <span className="text-muted-foreground">({member.email})</span></span>
                   <button
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors w-fit"
                     onClick={() => onRemoveMember(member.id)}
                     disabled={loading}
                   >
-                    <UserMinus className="w-4 h-4" /> Remove
+                    <UserMinus className="w-3 h-3 sm:w-4 sm:h-4" /> Remove
                   </button>
                 </li>
               ))}
@@ -263,23 +263,23 @@ export default function GroupModal({ open, onClose, onCreate, loading, experts }
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="bg-card rounded-lg shadow-lg max-w-md w-full p-6 border border-border relative animate-in fade-in-0 zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-2 sm:p-4">
+      <div className="bg-card rounded-lg shadow-lg w-full max-w-md p-4 sm:p-6 border border-border relative animate-in fade-in-0 zoom-in-95 duration-200 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
         <button
-          className="absolute top-3 right-3 text-muted-foreground hover:text-destructive"
+          className="absolute top-2 sm:top-3 right-2 sm:right-3 text-muted-foreground hover:text-destructive p-1"
           onClick={onClose}
           aria-label="Close"
         >
           ×
         </button>
-        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <Plus className="w-5 h-5 text-primary" /> Create New Group
+        <h3 className="text-base sm:text-xl font-bold mb-4 flex items-center gap-2 pr-6">
+          <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" /> Create New Group
         </h3>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Group Name</label>
+            <label className="block text-xs sm:text-sm font-medium mb-1">Group Name</label>
             <input
-              className="w-full border border-border rounded px-3 py-2 bg-background"
+              className="w-full border border-border rounded px-3 py-2 bg-background text-sm"
               value={name}
               onChange={e => setName(e.target.value)}
               required
@@ -288,9 +288,9 @@ export default function GroupModal({ open, onClose, onCreate, loading, experts }
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Description</label>
+            <label className="block text-xs sm:text-sm font-medium mb-1">Description</label>
             <textarea
-              className="w-full border border-border rounded px-3 py-2 bg-background min-h-[60px]"
+              className="w-full border border-border rounded px-3 py-2 bg-background min-h-[60px] text-sm"
               value={description}
               onChange={e => setDescription(e.target.value)}
               disabled={loading}
@@ -298,16 +298,16 @@ export default function GroupModal({ open, onClose, onCreate, loading, experts }
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Select Experts (at least 2)</label>
+            <label className="block text-xs sm:text-sm font-medium mb-1">Select Experts (at least 2)</label>
             <div className="relative">
-              <div className="flex flex-wrap gap-2 mb-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2">
                 {selectedExperts.map(expert => (
-                  <div key={expert.id} className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded text-sm">
-                    {expert.username}
+                  <div key={expert.id} className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded text-xs sm:text-sm">
+                    <span className="truncate max-w-[100px] sm:max-w-none">{expert.username}</span>
                     <button
                       type="button"
                       onClick={() => handleRemoveExpert(expert.id)}
-                      className="text-primary hover:text-destructive"
+                      className="text-primary hover:text-destructive shrink-0"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -346,11 +346,11 @@ export default function GroupModal({ open, onClose, onCreate, loading, experts }
               </div>
             </div>
           </div>
-          {error && <div className="text-destructive text-sm">{error}</div>}
-          <div className="flex justify-end gap-2 mt-4">
+          {error && <div className="text-destructive text-xs sm:text-sm">{error}</div>}
+          <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4">
             <button
               type="button"
-              className="px-4 py-2 rounded bg-muted text-foreground hover:bg-muted/80"
+              className="px-4 py-2 rounded bg-muted text-foreground hover:bg-muted/80 text-xs sm:text-sm order-2 sm:order-1"
               onClick={onClose}
               disabled={loading}
             >
@@ -358,7 +358,7 @@ export default function GroupModal({ open, onClose, onCreate, loading, experts }
             </button>
             <button
               type="submit"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors text-xs sm:text-sm order-1 sm:order-2"
               disabled={loading}
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Create
