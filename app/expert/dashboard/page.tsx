@@ -17,6 +17,7 @@ import { PreferenceModule } from "@/components/expert/preference-module"
 import { ProfileInfluenceModule } from "@/components/expert/profile-influence-module"
 import { jwtDecode } from "jwt-decode"
 import { RankingModule } from "@/components/expert/ranking-module"
+import { FuzzyMembershipChart } from "@/components/expert/fuzzy-membership-chart"
 
 // --- Interfaces ---
 interface ExpertHistoryRecord {
@@ -877,6 +878,7 @@ export default function ExpertDashboard() {
           </TabsContent>
           <TabsContent value="ruleset" className="space-y-4">
             <RulesetModule />
+            <FuzzyMembershipChart />
           </TabsContent>
         </Tabs>
       </div>
