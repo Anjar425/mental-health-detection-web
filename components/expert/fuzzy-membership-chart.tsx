@@ -95,87 +95,66 @@ export function FuzzyMembershipChart({
 
   return (
     <Card className="border-border/50">
-      <CardHeader className="p-3 sm:p-6">
+      <CardHeader className="pb-3 sm:pb-4">
         <CardTitle className="text-base sm:text-lg">{title}</CardTitle>
         <CardDescription className="text-xs sm:text-sm">{description}</CardDescription>
       </CardHeader>
-      <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
-        <div className="w-full h-96">
+      <CardContent className="p-0">
+        <div className="w-full h-[500px] px-3 sm:px-6">
           <ChartContainer config={FUZZY_CHART_CONFIG}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={data}
-                margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+                margin={{ top: 10, right: 30, left: 60, bottom: 50 }}
               >
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
                 <XAxis
                   dataKey="score"
                   type="number"
                   domain={[0, 3]}
-                  label={{ value: "Score", position: "insideBottomRight", offset: -5 }}
-                  className="text-xs"
+                  label={{ value: "Score", position: "bottom", offset: 10 }}
+                  tick={{ fontSize: 12 }}
                 />
                 <YAxis
                   domain={[0, 1]}
-                  label={{ value: "Membership Degree", angle: -90, position: "insideLeft" }}
-                  className="text-xs"
+                  label={{ value: "Membership Degree", angle: -90, position: "left" }}
+                  tick={{ fontSize: 12 }}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend 
                   wrapperStyle={{ paddingTop: "20px" }}
-                  className="text-xs sm:text-sm"
+                  iconType="line"
                 />
                 <Line
                   type="monotone"
                   dataKey="low"
                   stroke={FUZZY_CHART_CONFIG.low.color}
-                  strokeWidth={2}
+                  strokeWidth={3}
                   dot={false}
-                  name={FUZZY_CHART_CONFIG.low.label}
+                  name="Low (μ)"
+                  isAnimationActive={false}
                 />
                 <Line
                   type="monotone"
                   dataKey="medium"
                   stroke={FUZZY_CHART_CONFIG.medium.color}
-                  strokeWidth={2}
+                  strokeWidth={3}
                   dot={false}
-                  name={FUZZY_CHART_CONFIG.medium.label}
+                  name="Medium (μ)"
+                  isAnimationActive={false}
                 />
                 <Line
                   type="monotone"
                   dataKey="high"
                   stroke={FUZZY_CHART_CONFIG.high.color}
-                  strokeWidth={2}
+                  strokeWidth={3}
                   dot={false}
-                  name={FUZZY_CHART_CONFIG.high.label}
+                  name="High (μ)"
+                  isAnimationActive={false}
                 />
               </LineChart>
             </ResponsiveContainer>
           </ChartContainer>
-        </div>
-        
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg border border-border/30">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: FUZZY_CHART_CONFIG.low.color }}></div>
-              <span className="text-xs sm:text-sm font-medium">Low (μ)</span>
-            </div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Score 0.0 - 1.0</p>
-          </div>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: FUZZY_CHART_CONFIG.medium.color }}></div>
-              <span className="text-xs sm:text-sm font-medium">Medium (μ)</span>
-            </div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Score 1.0 - 2.0</p>
-          </div>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: FUZZY_CHART_CONFIG.high.color }}></div>
-              <span className="text-xs sm:text-sm font-medium">High (μ)</span>
-            </div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">Score 2.0 - 3.0</p>
-          </div>
         </div>
       </CardContent>
     </Card>
