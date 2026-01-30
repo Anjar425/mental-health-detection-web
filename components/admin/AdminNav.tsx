@@ -47,6 +47,9 @@ export function AdminNav() {
           <Link href="/admin/rankings" className={getLinkClass("/admin/rankings")}> 
             Rankings
           </Link>
+          <Link href="/admin/conflict" className={getLinkClass("/admin/conflict")}> 
+            Conflicts
+          </Link>
         </div>
       </div>
 
