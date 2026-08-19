@@ -4,7 +4,8 @@ import { useEffect, useState } from "react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import Link from "next/link"
 import { Shield } from "lucide-react"
-import { jwtDecode } from "jwt-decode"
+import { useRouter } from "next/navigation"
+import { isTokenExpired, getRoleFromToken, clearAuth } from "@/lib/auth"
 
 interface HeaderProps {
 	title?: string
@@ -34,32 +35,27 @@ export function Header({ title = "MindCare", subtitle, showLogo = true }: Header
 		if (!token) return setIsLoggedIn(false)
 
 		try {
-			const decoded = jwtDecode<JWTPayload>(token)
-
-			if (!decoded.exp) {
+			if (isTokenExpired(token)) {
+				// get role if present for contextual message
+				const role = getRoleFromToken(token) || "user"
+				clearAuth()
 				setIsLoggedIn(false)
-				sessionStorage.removeItem("authToken")
+				// redirect to logged-out page with reason
+				router.replace(`/auth/logged-out?role=${encodeURIComponent(role)}&reason=expired`)
 				return
 			}
 
-			const now = Math.floor(Date.now() / 1000)
-			if (decoded.exp < now) {
-				setIsLoggedIn(false)
-				sessionStorage.removeItem("authToken")
-				return
-			}
-
+			const role = getRoleFromToken(token) || "user"
 			setUser({
-				name: decoded.name || "User",
-				avatar_url: decoded.avatar_url || "",
-				role: decoded.role || "user"
+				name: undefined,
+				avatar_url: undefined,
+				role: role,
 			})
-
 			setIsLoggedIn(true)
 		} catch (err) {
 			console.error("Invalid token:", err)
+			clearAuth()
 			setIsLoggedIn(false)
-			sessionStorage.removeItem("authToken")
 		}
 	}, [])
 
@@ -69,21 +65,21 @@ export function Header({ title = "MindCare", subtitle, showLogo = true }: Header
 
 	return (
 		<header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur-sm">
-			<div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+			<div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
 
 				{/* Logo */}
-				<div className="flex-1">
+				<div className="flex-1 min-w-0">
 					{showLogo && (
-						<div className="flex items-center gap-2 mb-2">
-							<div className="w-8 h-8 rounded-lg bg-linear-to-br from-primary to-secondary flex items-center justify-center">
-								<span className="text-white text-sm font-bold">MC</span>
+						<div className="flex items-center gap-2 mb-1 sm:mb-2">
+							<div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-linear-to-br from-primary to-secondary flex items-center justify-center shrink-0">
+								<span className="text-white text-xs sm:text-sm font-bold">MC</span>
 							</div>
-							<Link href="/" className="text-xl font-bold text-foreground hover:opacity-80 transition-opacity">
+							<Link href="/" className="text-base sm:text-xl font-bold text-foreground hover:opacity-80 transition-opacity truncate">
 								{title}
 							</Link>
 						</div>
 					)}
-					{subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
+					{subtitle && <p className="text-xs sm:text-sm text-muted-foreground truncate">{subtitle}</p>}
 				</div>
 
 				{/* Right section */}
@@ -91,10 +87,10 @@ export function Header({ title = "MindCare", subtitle, showLogo = true }: Header
 					/* Jika belum login */
 					<Link
 						href="/auth/login"
-						className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium"
+						className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-xs sm:text-sm font-medium shrink-0"
 					>
-						<div className="h-8 flex flex-row justify-center items-center gap-2">
-							<Shield className="w-4 h-4" />
+						<div className="h-6 sm:h-8 flex flex-row justify-center items-center gap-1 sm:gap-2">
+							<Shield className="w-3 h-3 sm:w-4 sm:h-4" />
 							<span className="hidden sm:inline">Login</span>
 						</div>
 					</Link>
@@ -102,9 +98,9 @@ export function Header({ title = "MindCare", subtitle, showLogo = true }: Header
 					/* Jika sudah login */
 					<Link
 						href={dashboardUrl}
-						className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm font-medium"
+						className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-accent transition-colors text-xs sm:text-sm font-medium shrink-0"
 					>
-						<Avatar className="h-8 w-8">
+						<Avatar className="h-6 w-6 sm:h-8 sm:w-8">
 							<AvatarImage
 								src={user?.avatar_url || "/default-avatar.png"}
 								alt={user?.name || "User"}
@@ -114,7 +110,7 @@ export function Header({ title = "MindCare", subtitle, showLogo = true }: Header
 							</AvatarFallback>
 						</Avatar>
 
-						<span className="text-sm font-medium text-foreground hidden sm:inline">
+						<span className="text-xs sm:text-sm font-medium text-foreground hidden sm:inline">
 							{user?.name || "User"}
 						</span>
 					</Link>

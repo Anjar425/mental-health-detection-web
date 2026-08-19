@@ -156,55 +156,55 @@ export function ProfileInfluenceModule() {
 	}
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-4 sm:space-y-6">
 			{/* Profile Information */}
 			<Card className="border-border/50">
-				<CardHeader>
-					<CardTitle>Profil Pakar</CardTitle>
-					<CardDescription>Informasi mengenai kredibilitas dan pengalaman Anda sebagai pakar</CardDescription>
+				<CardHeader className="p-3 sm:p-6">
+					<CardTitle className="text-base sm:text-lg">Profil Pakar</CardTitle>
+					<CardDescription className="text-xs sm:text-sm">Informasi mengenai kredibilitas dan pengalaman Anda sebagai pakar</CardDescription>
 				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-						<div className="space-y-2">
-							<label className="text-sm font-medium text-foreground">Tingkat Pendidikan</label>
+				<CardContent className="p-3 sm:p-6 pt-0 sm:pt-0 space-y-3 sm:space-y-4">
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+						<div className="space-y-1.5 sm:space-y-2">
+							<label className="text-xs sm:text-sm font-medium text-foreground">Tingkat Pendidikan</label>
 							<Input
 								placeholder="contoh: S2 Psikologi Klinis"
 								value={profile.education}
 								onChange={(e) => handleProfileChange("education", e.target.value)}
-								className="bg-background border-border/50"
+								className="bg-background border-border/50 text-sm"
 							/>
 						</div>
 
-						<div className="space-y-2">
-							<label className="text-sm font-medium text-foreground">Jumlah Pasien Ditangani</label>
+						<div className="space-y-1.5 sm:space-y-2">
+							<label className="text-xs sm:text-sm font-medium text-foreground">Jumlah Pasien Ditangani</label>
 							<Input
 								type="number"
 								placeholder="contoh: 500"
 								value={profile.patientCount}
 								onChange={(e) => handleProfileChange("patientCount", e.target.value)}
-								className="bg-background border-border/50"
+								className="bg-background border-border/50 text-sm"
 							/>
 						</div>
 
-						<div className="space-y-2">
-							<label className="text-sm font-medium text-foreground">Jumlah Publikasi</label>
+						<div className="space-y-1.5 sm:space-y-2">
+							<label className="text-xs sm:text-sm font-medium text-foreground">Jumlah Publikasi</label>
 							<Input
 								type="number"
 								placeholder="contoh: 12"
 								value={profile.publications}
 								onChange={(e) => handleProfileChange("publications", e.target.value)}
-								className="bg-background border-border/50"
+								className="bg-background border-border/50 text-sm"
 							/>
 						</div>
 
-						<div className="space-y-2">
-							<label className="text-sm font-medium text-foreground">Jam Terbang (Jam)</label>
+						<div className="space-y-1.5 sm:space-y-2">
+							<label className="text-xs sm:text-sm font-medium text-foreground">Pengalaman (Tahun)</label>
 							<Input
 								type="number"
 								placeholder="contoh: 10000"
 								value={profile.experienceHours}
 								onChange={(e) => handleProfileChange("experienceHours", e.target.value)}
-								className="bg-background border-border/50"
+								className="bg-background border-border/50 text-sm"
 							/>
 						</div>
 					</div>
@@ -213,27 +213,27 @@ export function ProfileInfluenceModule() {
 
 			{/* Influence Weights */}
 			<Card className="border-border/50">
-				<CardHeader>
-					<CardTitle>Persentase Pengaruh terhadap Diagnosis</CardTitle>
-					<CardDescription>
+				<CardHeader className="p-3 sm:p-6">
+					<CardTitle className="text-base sm:text-lg">Persentase Pengaruh terhadap Diagnosis</CardTitle>
+					<CardDescription className="text-xs sm:text-sm">
 						Tentukan seberapa besar pengaruh setiap faktor kredibilitas Anda dalam diagnosis
 					</CardDescription>
 				</CardHeader>
-				<CardContent className="space-y-6">
+				<CardContent className="p-3 sm:p-6 pt-0 sm:pt-0 space-y-4 sm:space-y-6">
 					{/* Education Weight */}
-					<div className="space-y-3">
+					<div className="space-y-2 sm:space-y-3">
 						<div className="flex items-center justify-between">
-							<label className="text-sm font-medium text-foreground">Tingkat Pendidikan</label>
-							<div className="flex items-center gap-2">
+							<label className="text-xs sm:text-sm font-medium text-foreground">Tingkat Pendidikan</label>
+							<div className="flex items-center gap-1 sm:gap-2">
 								<input
 									type="number"
 									min="0"
 									max="100"
 									value={weights.education}
 									onChange={(e) => handleWeightChange("education", Number.parseInt(e.target.value))}
-									className="w-12 px-2 py-1 rounded border border-border/50 bg-background text-sm text-center"
+									className="w-10 sm:w-12 px-1 sm:px-2 py-1 rounded border border-border/50 bg-background text-xs sm:text-sm text-center"
 								/>
-								<span className="text-sm text-muted-foreground">%</span>
+								<span className="text-xs sm:text-sm text-muted-foreground">%</span>
 							</div>
 						</div>
 						<Slider
@@ -247,19 +247,19 @@ export function ProfileInfluenceModule() {
 					</div>
 
 					{/* Patient Count Weight */}
-					<div className="space-y-3">
+					<div className="space-y-2 sm:space-y-3">
 						<div className="flex items-center justify-between">
-							<label className="text-sm font-medium text-foreground">Jumlah Pasien</label>
-							<div className="flex items-center gap-2">
+							<label className="text-xs sm:text-sm font-medium text-foreground">Jumlah Pasien</label>
+							<div className="flex items-center gap-1 sm:gap-2">
 								<input
 									type="number"
 									min="0"
 									max="100"
 									value={weights.patientCount}
 									onChange={(e) => handleWeightChange("patientCount", Number.parseInt(e.target.value))}
-									className="w-12 px-2 py-1 rounded border border-border/50 bg-background text-sm text-center"
+									className="w-10 sm:w-12 px-1 sm:px-2 py-1 rounded border border-border/50 bg-background text-xs sm:text-sm text-center"
 								/>
-								<span className="text-sm text-muted-foreground">%</span>
+								<span className="text-xs sm:text-sm text-muted-foreground">%</span>
 							</div>
 						</div>
 						<Slider
@@ -273,19 +273,19 @@ export function ProfileInfluenceModule() {
 					</div>
 
 					{/* Publications Weight */}
-					<div className="space-y-3">
+					<div className="space-y-2 sm:space-y-3">
 						<div className="flex items-center justify-between">
-							<label className="text-sm font-medium text-foreground">Publikasi Ilmiah</label>
-							<div className="flex items-center gap-2">
+							<label className="text-xs sm:text-sm font-medium text-foreground">Publikasi Ilmiah</label>
+							<div className="flex items-center gap-1 sm:gap-2">
 								<input
 									type="number"
 									min="0"
 									max="100"
 									value={weights.publications}
 									onChange={(e) => handleWeightChange("publications", Number.parseInt(e.target.value))}
-									className="w-12 px-2 py-1 rounded border border-border/50 bg-background text-sm text-center"
+									className="w-10 sm:w-12 px-1 sm:px-2 py-1 rounded border border-border/50 bg-background text-xs sm:text-sm text-center"
 								/>
-								<span className="text-sm text-muted-foreground">%</span>
+								<span className="text-xs sm:text-sm text-muted-foreground">%</span>
 							</div>
 						</div>
 						<Slider
@@ -299,19 +299,19 @@ export function ProfileInfluenceModule() {
 					</div>
 
 					{/* Experience Hours Weight */}
-					<div className="space-y-3">
+					<div className="space-y-2 sm:space-y-3">
 						<div className="flex items-center justify-between">
-							<label className="text-sm font-medium text-foreground">Jam Terbang</label>
-							<div className="flex items-center gap-2">
+							<label className="text-xs sm:text-sm font-medium text-foreground">Pengalaman</label>
+							<div className="flex items-center gap-1 sm:gap-2">
 								<input
 									type="number"
 									min="0"
 									max="100"
 									value={weights.experienceHours}
 									onChange={(e) => handleWeightChange("experienceHours", Number.parseInt(e.target.value))}
-									className="w-12 px-2 py-1 rounded border border-border/50 bg-background text-sm text-center"
+									className="w-10 sm:w-12 px-1 sm:px-2 py-1 rounded border border-border/50 bg-background text-xs sm:text-sm text-center"
 								/>
-								<span className="text-sm text-muted-foreground">%</span>
+								<span className="text-xs sm:text-sm text-muted-foreground">%</span>
 							</div>
 						</div>
 						<Slider
@@ -325,21 +325,21 @@ export function ProfileInfluenceModule() {
 					</div>
 
 					{/* Total Weight Indicator */}
-					<div className="p-4 bg-muted/30 rounded-lg border border-border/30">
-						<div className="flex items-center justify-between mb-2">
-							<p className="text-sm font-medium text-foreground">Total Persentase</p>
-							<p className={`font-semibold ${totalWeight === 100 ? "text-green-600" : "text-amber-600"}`}>
+					<div className="p-3 sm:p-4 bg-muted/30 rounded-lg border border-border/30">
+						<div className="flex items-center justify-between mb-1 sm:mb-2">
+							<p className="text-xs sm:text-sm font-medium text-foreground">Total Persentase</p>
+							<p className={`font-semibold text-sm sm:text-base ${totalWeight === 100 ? "text-green-600" : "text-amber-600"}`}>
 								{totalWeight}%
 							</p>
 						</div>
 						{totalWeight !== 100 && (
-							<p className="text-xs text-muted-foreground">Total harus 100% untuk menyimpan profil</p>
+							<p className="text-[10px] sm:text-xs text-muted-foreground">Total harus 100% untuk menyimpan profil</p>
 						)}
 					</div>
 
 					<Button
 						onClick={handleSaveProfile}
-						className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+						className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm"
 						disabled={totalWeight !== 100}
 					>
 						{isSaved ? "Tersimpan!" : "Simpan Profil Pakar"}
@@ -349,24 +349,24 @@ export function ProfileInfluenceModule() {
 
 			{/* Summary */}
 			<Card className="border-border/50 bg-primary/5">
-				<CardHeader>
-					<CardTitle className="text-base">Ringkasan Kredibilitas</CardTitle>
+				<CardHeader className="p-3 sm:p-6">
+					<CardTitle className="text-sm sm:text-base">Ringkasan Kredibilitas</CardTitle>
 				</CardHeader>
-				<CardContent>
-					<div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-						<div>
+				<CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+					<div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm">
+						<div className="min-w-0">
 							<p className="text-muted-foreground">Pendidikan</p>
-							<p className="font-semibold text-foreground">{profile.education || "-"}</p>
+							<p className="font-semibold text-foreground truncate">{profile.education || "-"}</p>
 						</div>
-						<div>
+						<div className="min-w-0">
 							<p className="text-muted-foreground">Pasien</p>
 							<p className="font-semibold text-foreground">{profile.patientCount || "0"}</p>
 						</div>
-						<div>
+						<div className="min-w-0">
 							<p className="text-muted-foreground">Publikasi</p>
 							<p className="font-semibold text-foreground">{profile.publications || "0"}</p>
 						</div>
-						<div>
+						<div className="min-w-0">
 							<p className="text-muted-foreground">Jam Kerja</p>
 							<p className="font-semibold text-foreground">{profile.experienceHours || "0"}</p>
 						</div>

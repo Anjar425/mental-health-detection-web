@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart"
 import { Pie, PieChart } from "recharts"
+import { useRouter } from "next/navigation"
 
 interface Scores {
 	depression: number
@@ -15,11 +16,25 @@ interface Scores {
 
 interface ResultsCardProps {
 	scores: Scores
+	userRole: "user" | "guest"
 	onRestart: () => void
+	groupId?: number | null
+	groupName?: string | null
 }
 
+export function ResultsCard({ scores, userRole, onRestart, groupId, groupName }: ResultsCardProps) {
+	const router = useRouter()
 
-export function ResultsCard({ scores, onRestart }: ResultsCardProps) {
+	const handleBackToDashboard = () => {
+		console.log("🔄 Navigation triggered. User role:", userRole)
+		if (userRole === "user") {
+			console.log("➡️ Redirecting to: /user/dashboard")
+			router.push("/user/dashboard")
+		} else {
+			console.log("➡️ Redirecting to: /")
+			router.push("/")
+		}
+	}
 	const chartData = [
 		{ browser: "Depresi", visitors: Number((scores.depression * 100).toFixed(2)), fill: "var(--chart-1)" },
 		{ browser: "Kecemasan", visitors: Number((scores.anxiety * 100).toFixed(2)), fill: "var(--chart-2)" },
@@ -53,46 +68,53 @@ export function ResultsCard({ scores, onRestart }: ResultsCardProps) {
 	const dominant = entries.reduce((a, b) => (a.value > b.value ? a : b));
 
 	return (
-		<div className="min-h-screen bg-linear-to-br from-background via-accent/5 to-background p-4">
-			<div className="max-w-4xl mx-auto pt-8">
+		<div className="min-h-screen bg-linear-to-br from-background via-accent/5 to-background p-3 sm:p-4">
+			<div className="max-w-4xl mx-auto pt-4 sm:pt-8">
 				{/* Header */}
-				<div className="text-center mb-8">
-					<h1 className="text-4xl font-bold text-foreground mb-4 text-balance">Hasil Sistem Pendukung Keputusan DASS-21</h1>
-					<p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
+				<div className="text-center mb-6 sm:mb-8">
+					<h1 className="text-xl sm:text-2xl md:text-4xl font-bold text-foreground mb-3 sm:mb-4 text-balance">Hasil Sistem Pendukung Keputusan DASS-21</h1>
+					<p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
 						Berikut adalah hasil evaluasi kesehatan mental Anda berdasarkan jawaban yang diberikan
 					</p>
+{(groupName || groupId) && (
+				<div className="mt-3 sm:mt-4 inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-primary/10 text-primary rounded-full text-xs sm:text-sm font-medium">
+					<span>
+						Interpretasi menggunakan konsensus Grup: {groupName ? groupName : `ID ${groupId}`}
+					</span>
+						</div>
+					)}
 				</div>
 
-				<Card className="border-2 border-accent/20 mb-8">
-					<CardHeader>
-						<CardTitle className="text-xl">Gejala Dominan</CardTitle>
-						<CardDescription>
+				<Card className="border-2 border-accent/20 mb-6 sm:mb-8">
+					<CardHeader className="p-4 sm:p-6">
+						<CardTitle className="text-base sm:text-xl">Gejala Dominan</CardTitle>
+						<CardDescription className="text-xs sm:text-sm">
 							Berdasarkan hasil perhitungan, berikut kategori dengan tingkat gejala tertinggi
 						</CardDescription>
 					</CardHeader>
 
-					<CardContent>
-						<div className="p-4 rounded-xl bg-accent/10">
-							<p className={`text-2xl font-bold ${dominant.color}`}>
+					<CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+						<div className="p-3 sm:p-4 rounded-xl bg-accent/10">
+							<p className={`text-lg sm:text-xl md:text-2xl font-bold ${dominant.color}`}>
 								{dominant.label}: {(dominant.value * 100).toFixed(2)}%
 							</p>
-							<p className="text-muted-foreground mt-2">
+							<p className="text-xs sm:text-sm text-muted-foreground mt-2">
 								Ini merupakan kategori dengan tingkat keparahan tertinggi berdasarkan jawaban Anda.
 							</p>
 						</div>
 					</CardContent>
 				</Card>
 
-				<Card className="border-2 border-accent/20 mb-8">
-					<CardHeader>
-						<CardTitle className="text-xl">Perolehan Skor</CardTitle>
-						<CardDescription>Rincian perhitungan skor berdasarkan kategori pertanyaan</CardDescription>
+				<Card className="border-2 border-accent/20 mb-6 sm:mb-8">
+					<CardHeader className="p-4 sm:p-6">
+						<CardTitle className="text-base sm:text-xl">Perolehan Skor</CardTitle>
+						<CardDescription className="text-xs sm:text-sm">Rincian perhitungan skor berdasarkan kategori pertanyaan</CardDescription>
 					</CardHeader>
-					<CardContent>
-						<div className="flex flex-row">
+					<CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+						<div className="flex flex-col sm:flex-row">
 							<ChartContainer
 								config={chartConfig}
-								className="[&_.recharts-pie-label-text]:fill-foreground basis-1/2 mx-auto aspect-square max-h-[250px] pb-0"
+								className="[&_.recharts-pie-label-text]:fill-foreground w-full sm:basis-1/2 mx-auto aspect-square max-h-[180px] sm:max-h-[250px] pb-0"
 							>
 								<PieChart>
 									<ChartTooltip content={<ChartTooltipContent hideLabel />} />
@@ -100,15 +122,15 @@ export function ResultsCard({ scores, onRestart }: ResultsCardProps) {
 								</PieChart>
 							</ChartContainer>
 
-							<div className="flex flex-col gap-6 justify-center basis-1/2">
+							<div className="flex flex-col gap-3 sm:gap-6 justify-center w-full sm:basis-1/2 mt-4 sm:mt-0">
 								<div className="text-left rounded-lg">
-									<div className="text-2xl font-bold font-mono text-chart-1">Depresi: {(scores.depression * 100).toFixed(2)}%</div>
+									<div className="text-base sm:text-xl md:text-2xl font-bold font-mono text-chart-1">Depresi: {(scores.depression * 100).toFixed(2)}%</div>
 								</div>
 								<div className="text-left rounded-lg">
-									<div className="text-2xl font-bold font-mono text-chart-2">Kecemasan: {(scores.anxiety * 100).toFixed(2)}%</div>
+									<div className="text-base sm:text-xl md:text-2xl font-bold font-mono text-chart-2">Kecemasan: {(scores.anxiety * 100).toFixed(2)}%</div>
 								</div>
 								<div className="text-left rounded-lg">
-									<div className="text-2xl font-bold font-mono text-chart-3">Stress: {(scores.stress * 100).toFixed(2)}%</div>
+									<div className="text-base sm:text-xl md:text-2xl font-bold font-mono text-chart-3">Stress: {(scores.stress * 100).toFixed(2)}%</div>
 								</div>
 							</div>
 						</div>
@@ -156,17 +178,15 @@ export function ResultsCard({ scores, onRestart }: ResultsCardProps) {
 					</CardContent>
 				</Card> */}
 
-				{/* Actions */}
-				<div className="flex justify-center gap-4">
-					<Button onClick={onRestart} variant="outline" className="px-8 bg-transparent">
-						Kembali ke Home
-					</Button>
-					<Button onClick={() => window.print()} className="px-8">
-						Cetak Hasil
-					</Button>
-				</div>
-
-				{/* Disclaimer */}
+			{/* Actions */}
+			<div className="flex justify-center gap-4">
+				<Button onClick={handleBackToDashboard} variant="outline" className="px-8 bg-transparent">
+					{userRole === "user" ? "Kembali ke Dashboard" : "Kembali ke Home"}
+				</Button>
+				<Button onClick={() => window.print()} className="px-8">
+					Cetak Hasil
+				</Button>
+			</div>				{/* Disclaimer */}
 				<Card className="mt-8 border-muted">
 					<CardContent className="pt-6">
 						<p className="text-xs text-muted-foreground text-center">

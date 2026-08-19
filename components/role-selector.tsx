@@ -25,14 +25,14 @@ const roles: RoleOption[] = [
     id: "guest",
     label: "Tamu",
     description: "Coba deteksi kesehatan mental tanpa membuat akun",
-    icon: <User className="w-5 h-5" />,
+    icon: <User className="w-4 h-4 sm:w-5 sm:h-5" />,
     color: "text-blue-500",
   },
   {
     id: "user",
     label: "Pengguna",
     description: "Buat akun untuk menyimpan riwayat dan analisis",
-    icon: <Lock className="w-5 h-5" />,
+    icon: <Lock className="w-4 h-4 sm:w-5 sm:h-5" />,
     color: "text-green-500",
   },
 ]
@@ -46,13 +46,13 @@ export function RoleSelector({ onRoleSelect }: RoleSelectorProps) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12">
-      <div className="mb-10">
-        <h3 className="text-2xl font-bold text-foreground mb-2 text-center">Pilih Peran Anda</h3>
-        <p className="text-center text-muted-foreground text-sm">Setiap peran memiliki akses ke fitur yang berbeda</p>
+    <div className="max-w-2xl mx-auto px-3 sm:px-4 py-6 sm:py-12">
+      <div className="mb-6 sm:mb-10">
+        <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-1.5 sm:mb-2 text-center">Pilih Peran Anda</h3>
+        <p className="text-center text-muted-foreground text-xs sm:text-sm">Setiap peran memiliki akses ke fitur yang berbeda</p>
       </div>
 
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
         {roles.map((role) => (
           <Card
             key={role.id}
@@ -63,14 +63,14 @@ export function RoleSelector({ onRoleSelect }: RoleSelectorProps) {
             }`}
             onClick={() => handleSelect(role.id)}
           >
-            <CardHeader className="pb-3">
-              <div className={`${role.color} mb-3`}>{role.icon}</div>
-              <h4 className="font-semibold text-foreground">{role.label}</h4>
-              <CardDescription className="text-xs text-muted-foreground">{role.description}</CardDescription>
+            <CardHeader className="p-3 sm:p-6 pb-2 sm:pb-3">
+              <div className={`${role.color} mb-2 sm:mb-3`}>{role.icon}</div>
+              <h4 className="font-semibold text-sm sm:text-base text-foreground">{role.label}</h4>
+              <CardDescription className="text-[10px] sm:text-xs text-muted-foreground">{role.description}</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 sm:p-6 pt-0">
               {selected === role.id && (
-                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-8 text-xs font-medium rounded-full">
+                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-7 sm:h-8 text-[10px] sm:text-xs font-medium rounded-full">
                   Dipilih
                 </Button>
               )}
